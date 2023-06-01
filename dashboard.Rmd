@@ -151,3 +151,20 @@ ggplotly(
 
 ```
 
+
+### Consumed calories
+
+```{r}
+
+ggplotly(
+mydata %>%
+  ggplot(aes(x = lwr_lim + weeks(date))) +
+  geom_point(aes(y = kcal),na.rm = T,col = "blue") +
+  geom_line(aes(y = kcal),na.rm = T,col = "blue") +
+  scale_y_continuous(n.breaks = 10,limits = c(1700,2300)) +
+  scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +
+  geom_hline(yintercept = c(1800,2000,2200) ,linetype = 2 , col = "red")+
+  labs( y = "kcal", x = "Date"))
+
+```
+
