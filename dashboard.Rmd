@@ -1,0 +1,153 @@
+---
+title: Report
+output:
+  flexdashboard::flex_dashboard:
+    orientation: column
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse); library(lubridate);library(modelr);library(kableExtra);library(plotly); library(splines);library(knitr);library(ggrepel);library(plotly);library(paletteer);
+library(reactable);library(flexdashboard);theme_set(theme_bw())
+options(digits=4); options(dplyr.summarise.inform=F)
+rm(list = ls()); cat("\014");
+
+## Input parameters 
+lwr_lim <- ymd("2022-08-14")
+upr_lim <- ymd("2023-08-01")
+ord <- 1
+target_fp <- 15
+target_bm <- 69
+
+## Script call 
+source("data_import.R")
+
+tf_bm <- lwr_lim + weeks(round((target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]])))
+tf_fp <- lwr_lim + weeks(round((target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])))
+
+rm(list = c("dr_1","dr_2","dr_3","dr_4","dr_7","t_interval","model_data","ord","model_bodymass","model_fatperc"))
+
+```
+
+
+```{r}
+
+recap_table <- mydata %>%
+  mutate(delta_body_mass = body_mass - lag(body_mass, default = first(body_mass)),
+         delta_lean_mass = lean_mass - lag(lean_mass, default = first(lean_mass)),
+         delta_fat_mass = fat_mass - lag(fat_mass, default = first(fat_mass)),
+         ratio  = abs(delta_fat_mass / ((delta_lean_mass +delta_fat_mass +  delta_body_mass )/2) *100) * sign(delta_body_mass),
+         date = lwr_lim + weeks(date), empty = ""
+         )  %>% 
+  filter(!is.na(delta_body_mass)) %>% 
+  select( date,body_mass,lean_mass,fat_mass,delta_body_mass,delta_lean_mass,delta_fat_mass,empty, ratio 
+  ) %>% 
+  arrange(desc(date))
+
+```
+
+Tables {data-icon="fa-table"}
+=====================================     
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### KPI
+
+```{r}
+
+valueBox(value = paste(round(last(mydata[!is.na(mydata$body_mass),]$body_mass),2)," kg and ", round(last(mydata[!is.na(mydata$fat_perc),]$fat_perc),2)," %"), icon = "ion-ios-body")
+
+```
+
+### Table
+
+```{r}
+
+recap_table %>%
+  kbl(
+    digits = 2,
+    align = "c",
+    booktabs = T,
+    linesep = "",
+    col.names = c("date","BodyMass","LeanMass","FatMass","d_BM","d_LM","d_FM","  ","perc")
+  )  %>% 
+  kable_styling( position = "center") %>%
+  add_header_above(c(" ", "absolute value" = 3,"delta" = 3,"","")) %>% 
+  column_spec(5, color = if_else(recap_table$delta_body_mass >= 0 , "#808080","black")) %>% 
+  column_spec(6, color = if_else(recap_table$delta_lean_mass < 0  , "#ec2F4B","#009FFF")) %>% 
+  column_spec(7, color = if_else(recap_table$delta_fat_mass  > 0  , "#ec2F4B","#009FFF")) %>%
+  column_spec(8, background = case_when(
+      75 <  recap_table$ratio ~ "#ec2F4B",
+      60 <  recap_table$ratio & recap_table$ratio  <= 75 ~ "#B24E6F",
+      25 <  recap_table$ratio & recap_table$ratio  <= 60 ~ "#4486D6",
+       0 <= recap_table$ratio & recap_table$ratio  <= 25 ~ "#009FFF",
+    recap_table$ratio <  0 &  recap_table$ratio  >= -25 ~ "#ec2F4B",
+    recap_table$ratio < -25 &  recap_table$ratio  >= -50 ~ "#B24E6F",
+    recap_table$ratio < -50 &  recap_table$ratio  >= -75 ~ "#4486D6",
+    recap_table$ratio < -75 ~ "#009FFF",
+    TRUE ~  "white"
+  )
+  ) 
+
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Fat percentage
+
+```{r }
+
+ggplotly(
+  mydata %>% 
+    ggplot(aes(x = lwr_lim + weeks(date))) +
+    geom_point(aes(y = fat_perc),na.rm = T,col = "red") +
+    geom_line(aes(y = fat_perc),na.rm = T,col = "red") +
+    geom_line(aes(y = fatperc_pred), na.rm = T, col = "red", linetype = 3) +
+    scale_y_continuous(n.breaks = 10,limits = c(14,23)) +
+    geom_hline(yintercept = target_fp ,linetype = 2 , col = "grey") +
+    scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +
+    labs( y = "Fat percentage", x = "Date")
+)
+
+```
+
+### Body Mass
+
+```{r }
+
+ggplotly(
+  mydata %>%   
+    ggplot(aes(x = lwr_lim + weeks(date))) +
+    geom_point(aes(y = body_mass),na.rm = T, col = "red") +
+    geom_line(aes(y = body_mass),na.rm = T, col = "red") +
+    geom_line(aes(y = bodymass_pred), col = "red",na.rm = T, linetype = 3) +
+    scale_y_continuous(n.breaks = 20,limits = c(68,83)) +
+    geom_hline(yintercept = target_bm, linetype = 2, col = "grey") +
+    scale_x_date(date_labels = "%b %y", date_breaks = "1 month" ) +
+    labs( y = "Body Mass", x = "Date")
+  
+)
+
+```
+
+Other graphs {data-icon="fa-signal"}
+===================================== 
+
+### Lean Body Mass
+
+```{r}
+
+ggplotly(
+  mydata %>% 
+    ggplot(aes(x = lwr_lim + weeks(date))) +
+    geom_point(aes(y = lean_mass),na.rm = T, col = "red") +
+    geom_line(aes(y = lean_mass),na.rm = T, col = "red") +
+    scale_y_continuous(n.breaks = 10,limits = c(60,64)) +
+    scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +
+    labs( y = "Lean Body Mass [kg]",  x = "Date" )
+)
+
+```
+
