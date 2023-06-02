@@ -1,3 +1,3 @@
-## Project Name and info
+## README
 
-
+A dashboard for tracking fitness levels.
