@@ -21,20 +21,17 @@ dr <- reduce(list(dr_1,dr_2,dr_3),full_join, by = "Date") %>%
   filter(!(is.na(body_mass)) & Date > lwr_lim) %>% 
   select( date,everything())
 
-dr1 <- dr %>% 
-  filter( Date > last(dr$Date) - weeks(5))
-
 ## Predictive model for Body Mass and Fat Percentage
-model_bodymass <- lm( body_mass ~  poly(x = date,degree = ord,raw = T), dr1)
-model_fatperc <- lm( fat_perc  ~  poly(x = date,degree = ord,raw = T), dr1)
+model_bodymass <- lm( body_mass ~  poly(x = date,degree = ord,raw = T), dr[dr$Date > last(dr$Date) - weeks(5),])
+model_fatperc  <- lm( fat_perc  ~  poly(x = date,degree = ord,raw = T), dr[dr$Date > last(dr$Date) - weeks(5),])
 
 model_data <- dr %>% 
-  data_grid( date = seq(first(dr1$date),t_interval)) %>%  
+  data_grid( date = seq(first(dr$date),t_interval)) %>%  
   add_predictions( model = model_bodymass , var = "bodymass_pred") %>% 
   add_predictions( model = model_fatperc , var = "fatperc_pred") 
 
 ## Summarizing by date 
-mydata <- dr %>% 
+df <- dr %>% 
   group_by(date) %>%
   summarise( body_mass = mean(body_mass,na.rm = T), 
              fat_mass = mean(fat_mass,na.rm = T), 
