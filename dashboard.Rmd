@@ -104,7 +104,7 @@ ggplotly(
     ggplot(aes(x = lwr_lim + weeks(date))) +
     geom_point(aes(y = fat_perc),na.rm = T,col = "red") +
     geom_line(aes(y = fat_perc),na.rm = T,col = "red") +
-    geom_line(aes(y = fatperc_pred), na.rm = T, col = "red", linetype = 3) +
+    geom_line(aes(y = fatperc_pred), na.rm = T, col = "grey", linetype = 3) +
     scale_y_continuous(n.breaks = 10,limits = c(14,23)) +
     geom_hline(yintercept = target_fp ,linetype = 2 , col = "grey") +
     scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +
@@ -122,7 +122,7 @@ ggplotly(
     ggplot(aes(x = lwr_lim + weeks(date))) +
     geom_point(aes(y = body_mass),na.rm = T, col = "red") +
     geom_line(aes(y = body_mass),na.rm = T, col = "red") +
-    geom_line(aes(y = bodymass_pred), col = "red",na.rm = T, linetype = 3) +
+    geom_line(aes(y = bodymass_pred), col = "grey",na.rm = T, linetype = 3) +
     scale_y_continuous(n.breaks = 20,limits = c(68,83)) +
     geom_hline(yintercept = target_bm, linetype = 2, col = "grey") +
     scale_x_date(date_labels = "%b %y", date_breaks = "1 month" ) +
