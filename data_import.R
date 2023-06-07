@@ -1,7 +1,4 @@
 
-library(tidyverse); library(lubridate);library(modelr); library(splines);theme_set(theme_bw())
-options(digits=4); options(dplyr.summarise.inform=F)
-
 t_interval <- as.double(upr_lim-lwr_lim)
 
 dr_1 <- read_delim("Data/body_mass.txt", delim = ",", show_col_types = F)
@@ -28,8 +25,8 @@ dr1 <- dr %>%
   filter( Date > last(dr$Date) - weeks(5))
 
 ## Predictive model for Body Mass and Fat Percentage
-model_bodymass <- lm( body_mass ~  ns(date,ord), dr1)  
-model_fatperc <- lm( fat_perc  ~  ns(date,ord), dr1)  
+model_bodymass <- lm( body_mass ~  poly(x = date,degree = ord,raw = T), dr1)
+model_fatperc <- lm( fat_perc  ~  poly(x = date,degree = ord,raw = T), dr1)
 
 model_data <- dr %>% 
   data_grid( date = seq(first(dr1$date),t_interval)) %>%  
@@ -66,8 +63,7 @@ mydata <- dr %>%
   rename(date = n_week) %>% 
   select(date,body_mass,bodymass_pred,fat_perc, fatperc_pred,kcal,lean_perc, prot_g, fat_mass, lean_mass)
 
-
-## Predictive model for Body Mass and Fat Percentage
-model_bodymass <- lm( body_mass ~  poly(x = date,degree = ord,raw = T), mydata)
-model_fatperc <- lm( fat_perc  ~  poly(x = date,degree = ord,raw = T), mydata)
+# # ## Predictive model for Body Mass and Fat Percentage
+# model_bodymass <- lm( body_mass ~  poly(x = date,degree = ord,raw = T), dr1)
+# model_fatperc <- lm( fat_perc  ~  poly(x = date,degree = ord,raw = T), dr1)
 

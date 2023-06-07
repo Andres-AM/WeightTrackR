@@ -1,5 +1,5 @@
 ---
-title: Report
+title: Health Dashboard
 output:
   flexdashboard::flex_dashboard:
     orientation: column
@@ -7,14 +7,11 @@ output:
 
 ```{r setup, include=FALSE}
 
-library(tidyverse); library(lubridate);library(modelr);library(kableExtra);library(plotly); library(splines);library(knitr);library(ggrepel);library(plotly);library(paletteer);
-library(reactable);library(flexdashboard);theme_set(theme_bw())
-options(digits=4); options(dplyr.summarise.inform=F)
-rm(list = ls()); cat("\014");
+source("libraries.R")
 
 ## Input parameters 
 lwr_lim <- ymd("2022-08-14")
-upr_lim <- ymd("2023-08-01")
+upr_lim <- ymd("2023-09-01")
 ord <- 1
 target_fp <- 15
 target_bm <- 69
@@ -22,16 +19,21 @@ target_bm <- 69
 ## Script call 
 source("data_import.R")
 
-tf_bm <- lwr_lim + weeks(round((target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]])))
-tf_fp <- lwr_lim + weeks(round((target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])))
+## Prediction for a date
+# tf_bm <- lwr_lim + weeks(round((target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]])))
+# tf_fp <- lwr_lim + weeks(round((target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])))
 
+tf_bm <- lwr_lim + (round((target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]])))
+tf_fp <- lwr_lim + (round((target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])))
+
+## Removing unused variables 
 rm(list = c("dr_1","dr_2","dr_3","dr_4","dr_7","t_interval","model_data","ord","model_bodymass","model_fatperc"))
 
 ```
 
-
 ```{r}
 
+## Creating the recap table of data
 recap_table <- mydata %>%
   mutate(delta_body_mass = body_mass - lag(body_mass, default = first(body_mass)),
          delta_lean_mass = lean_mass - lag(lean_mass, default = first(lean_mass)),
@@ -56,6 +58,7 @@ Column {data-width=500}
 
 ```{r}
 
+## KPI values on the top left corner 
 valueBox(value = paste(round(last(mydata[!is.na(mydata$body_mass),]$body_mass),2)," kg and ", round(last(mydata[!is.na(mydata$fat_perc),]$fat_perc),2)," %"), icon = "ion-ios-body")
 
 ```
@@ -64,6 +67,7 @@ valueBox(value = paste(round(last(mydata[!is.na(mydata$body_mass),]$body_mass),2
 
 ```{r}
 
+## Adding colors to the tables
 recap_table %>%
   kbl(
     digits = 2,
@@ -99,6 +103,7 @@ Column {data-width=500}
 
 ```{r }
 
+## Interactive table displaying 
 ggplotly(
   mydata %>% 
     ggplot(aes(x = lwr_lim + weeks(date))) +
@@ -107,7 +112,8 @@ ggplotly(
     geom_line(aes(y = fatperc_pred), na.rm = T, col = "grey", linetype = 3) +
     scale_y_continuous(n.breaks = 10,limits = c(14,23)) +
     geom_hline(yintercept = target_fp ,linetype = 2 , col = "grey") +
-    scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +
+    scale_x_date(date_labels = "%b %y", date_breaks = "1 month") + 
+    geom_point(aes(tf_fp,15))+
     labs( y = "Fat percentage", x = "Date")
 )
 
