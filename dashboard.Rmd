@@ -10,8 +10,9 @@ output:
 source("libraries.R")
 
 ## Input parameters 
-lwr_lim <- ymd("2022-08-14")
-upr_lim <- ymd("2023-09-01")
+lwr_lim <- ymd("2022-08-01")
+upr_lim <- ymd("2023-10-01")
+w_mod <- 5
 ord <- 1
 target_fp <- 15
 target_bm <- 69
@@ -19,8 +20,8 @@ target_bm <- 69
 ## Script call 
 source("data_import.R")
 
-tf_bm <- lwr_lim + (target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]])
-tf_fp <- lwr_lim + (target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])
+tf_bm <- lwr_lim + ((target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]])) *7
+tf_fp <- lwr_lim + (target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])*7
 
 ## Removing unused variables 
 rm(list = c("dr","dr_1","dr_2","dr_3","dr_4","dr_7","t_interval",
@@ -31,7 +32,7 @@ rm(list = c("dr","dr_1","dr_2","dr_3","dr_4","dr_7","t_interval",
 ```{r}
 
 ## Creating the recap table of data
-recap_table <- df %>%
+recap_table <- df_clean %>%
   mutate(delta_body_mass = body_mass - lag(body_mass, default = first(body_mass)),
          delta_lean_mass = lean_mass - lag(lean_mass, default = first(lean_mass)),
          delta_fat_mass = fat_mass - lag(fat_mass, default = first(fat_mass)),
@@ -61,9 +62,9 @@ Using a linear model, forecast the anticipated duration for reaching a desired v
 ```{r}
 
 ## KPI values on the top left corner 
-valueBox(value = paste(round(last(df[!is.na(df$body_mass),]$body_mass),2),
+valueBox(value = paste(round(last(df_clean[!is.na(df_clean$body_mass),]$body_mass),2),
                        " kg and ", 
-                       round(last(df[!is.na(df$fat_perc),]$fat_perc),2),
+                       round(last(df_clean[!is.na(df_clean$fat_perc),]$fat_perc),2),
                        " fat [%]"),
          icon = "ion-ios-body")
 
@@ -107,7 +108,7 @@ recap_table %>%
 ```{r}
 
 ggplotly(
-  df %>%
+  df_clean %>%
     ggplot(aes(x = lwr_lim + weeks(date))) +
     geom_point(aes(y = kcal),na.rm = T,col = "blue") +
     geom_line(aes(y = kcal),na.rm = T,col = "blue") +
@@ -132,7 +133,7 @@ Column {data-width=500}
 
 ## Interactive table displaying using ggplotly
 ggplotly(
-  df %>% 
+  df_clean %>% 
     ggplot(aes(x = lwr_lim + weeks(date))) +
     geom_point(aes(y = fat_perc),na.rm = T,col = "red", size= 0.75) +
     geom_line(aes(y = fat_perc),na.rm = T,col = "red") +
@@ -153,7 +154,7 @@ ggplotly(
 
 ## Interactive table displaying using ggplotly
 ggplotly(
-  df %>%   
+  df_clean %>%   
     ggplot(aes(x = lwr_lim + weeks(date))) +
     geom_point(aes(y = body_mass),na.rm = T, col = "red", size= 0.75) +
     geom_line(aes(y = body_mass),na.rm = T, col = "red") +
@@ -178,7 +179,7 @@ Other graphs {data-icon="fa-signal"}
 
 ## Interactive table displaying using ggplotly
 ggplotly(
-  df %>% 
+  df_clean %>% 
     ggplot(aes(x = lwr_lim + weeks(date))) +
     geom_point(aes(y = lean_mass),na.rm = T, col = "red") +
     geom_line(aes(y = lean_mass),na.rm = T, col = "red") +
