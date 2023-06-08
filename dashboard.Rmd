@@ -45,13 +45,18 @@ recap_table <- df %>%
 
 ```
 
-Tables {data-icon="fa-table"}
+Data presentation {data-icon="fa-table"}
 =====================================     
 
 Column {data-width=500}
 -----------------------------------------------------------------------
 
-### KPI
+### Purpose {data-height=100}
+
+An overview of data related to weight loss through fitness tracking, with a focus on monitoring key performance indicators.  
+Using a linear model, forecast the anticipated duration for reaching a desired value by analyzing data from the preceding five weeks, for the Fat percentage and Body Mass graphs.
+
+### KPI 
 
 ```{r}
 
@@ -59,16 +64,16 @@ Column {data-width=500}
 valueBox(value = paste(round(last(df[!is.na(df$body_mass),]$body_mass),2),
                        " kg and ", 
                        round(last(df[!is.na(df$fat_perc),]$fat_perc),2),
-                       " %"),
+                       " fat [%]"),
          icon = "ion-ios-body")
 
 ```
 
-### Table
+### Data Overview table {data-height=250}
 
 ```{r}
 
-## Adding colors to the tables
+## Adding conditional colors to the table for better data interpretation
 recap_table %>%
   kbl(
     digits = 2,
@@ -97,6 +102,27 @@ recap_table %>%
 
 ```
 
+### Consumed calories {data-height=250}
+
+```{r}
+
+ggplotly(
+  df %>%
+    ggplot(aes(x = lwr_lim + weeks(date))) +
+    geom_point(aes(y = kcal),na.rm = T,col = "blue") +
+    geom_line(aes(y = kcal),na.rm = T,col = "blue") +
+    scale_y_continuous(n.breaks = 10,limits = c(1700,2300)) +
+    scale_x_date(date_labels = "%b %y", date_breaks = "1 month",) +
+    geom_hline(yintercept = c(1800,2000,2200) ,linetype = 2 , col = "red")+
+    theme(axis.text.x = element_text(angle = 45))+
+    labs( y = "kcal", x = "Date")
+)
+
+```
+
+
+
+
 Column {data-width=500}
 -----------------------------------------------------------------------
 
@@ -104,17 +130,18 @@ Column {data-width=500}
 
 ```{r }
 
-## Interactive table displaying 
+## Interactive table displaying using ggplotly
 ggplotly(
   df %>% 
     ggplot(aes(x = lwr_lim + weeks(date))) +
-    geom_point(aes(y = fat_perc),na.rm = T,col = "red") +
+    geom_point(aes(y = fat_perc),na.rm = T,col = "red", size= 0.75) +
     geom_line(aes(y = fat_perc),na.rm = T,col = "red") +
     geom_line(aes(y = fatperc_pred), na.rm = T, col = "grey", linetype = 3) +
     scale_y_continuous(n.breaks = 10,limits = c(14,23)) +
     geom_hline(yintercept = target_fp ,linetype = 2 , col = "grey") +
     scale_x_date(date_labels = "%b %y", date_breaks = "1 month") + 
     geom_point(aes(tf_fp,target_fp), shape = 3, color = "red")+
+    theme(axis.text.x = element_text(angle = 45))+
     labs( y = "Fat percentage", x = "Date")
 )
 
@@ -124,16 +151,18 @@ ggplotly(
 
 ```{r }
 
+## Interactive table displaying using ggplotly
 ggplotly(
   df %>%   
     ggplot(aes(x = lwr_lim + weeks(date))) +
-    geom_point(aes(y = body_mass),na.rm = T, col = "red") +
+    geom_point(aes(y = body_mass),na.rm = T, col = "red", size= 0.75) +
     geom_line(aes(y = body_mass),na.rm = T, col = "red") +
     geom_line(aes(y = bodymass_pred), col = "grey",na.rm = T, linetype = 3) +
     scale_y_continuous(n.breaks = 20,limits = c(68,83)) +
     geom_hline(yintercept = target_bm, linetype = 2, col = "grey") +
     scale_x_date(date_labels = "%b %y", date_breaks = "1 month" ) +
     geom_point(aes(tf_bm,target_bm), shape = 3, color = "red")+
+    theme(axis.text.x = element_text(angle = 45))+
     labs( y = "Body Mass", x = "Date")
   
 )
@@ -147,6 +176,7 @@ Other graphs {data-icon="fa-signal"}
 
 ```{r}
 
+## Interactive table displaying using ggplotly
 ggplotly(
   df %>% 
     ggplot(aes(x = lwr_lim + weeks(date))) +
@@ -159,21 +189,5 @@ ggplotly(
 
 ```
 
-
-### Consumed calories
-
-```{r}
-
-ggplotly(
-  df %>%
-    ggplot(aes(x = lwr_lim + weeks(date))) +
-    geom_point(aes(y = kcal),na.rm = T,col = "blue") +
-    geom_line(aes(y = kcal),na.rm = T,col = "blue") +
-    scale_y_continuous(n.breaks = 10,limits = c(1700,2300)) +
-    scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +
-    geom_hline(yintercept = c(1800,2000,2200) ,linetype = 2 , col = "red")+
-    labs( y = "kcal", x = "Date")
-)
-
-```
+ 
 

@@ -28,7 +28,8 @@ model_fatperc  <- lm( fat_perc  ~  poly(x = date,degree = ord,raw = T), dr[dr$Da
 model_data <- dr %>% 
   data_grid( date = seq(first(dr$date),t_interval)) %>%  
   add_predictions( model = model_bodymass , var = "bodymass_pred") %>% 
-  add_predictions( model = model_fatperc , var = "fatperc_pred") 
+  add_predictions( model = model_fatperc , var = "fatperc_pred") %>% 
+  filter( date > (last(dr$date) - 5))
 
 ## Summarizing by date 
 df <- dr %>% 
@@ -60,7 +61,7 @@ df <- dr %>%
   rename(date = n_week) %>% 
   select(date,body_mass,bodymass_pred,fat_perc, fatperc_pred,kcal,lean_perc, prot_g, fat_mass, lean_mass)
 
-# # ## Predictive model for Body Mass and Fat Percentage
-# model_bodymass <- lm( body_mass ~  poly(x = date,degree = ord,raw = T), dr1)
-# model_fatperc <- lm( fat_perc  ~  poly(x = date,degree = ord,raw = T), dr1)
+## Predictive model for Body Mass and Fat Percentage
+# model_bodymass <- lm( body_mass ~  poly(x = date,degree = ord,raw = T), df)
+# model_fatperc <- lm( fat_perc  ~  poly(x = date,degree = ord,raw = T), df)
 
