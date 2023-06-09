@@ -14,13 +14,13 @@ lwr_lim <- ymd("2022-08-01")
 upr_lim <- ymd("2023-10-01")
 w_mod <- 5
 ord <- 1
-target_fp <- 15
+target_fp <- 14
 target_bm <- 69
 
 ## Script call 
 source("data_import.R")
 
-tf_bm <- lwr_lim + ((target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]])) *7
+tf_bm <- lwr_lim + ((target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]]))*7
 tf_fp <- lwr_lim + (target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])*7
 
 ## Removing unused variables 
@@ -29,22 +29,6 @@ rm(list = c("dr","dr_1","dr_2","dr_3","dr_4","dr_7","t_interval",
 
 ```
 
-```{r}
-
-## Creating the recap table of data
-recap_table <- df_clean %>%
-  mutate(delta_body_mass = body_mass - lag(body_mass, default = first(body_mass)),
-         delta_lean_mass = lean_mass - lag(lean_mass, default = first(lean_mass)),
-         delta_fat_mass = fat_mass - lag(fat_mass, default = first(fat_mass)),
-         ratio  = abs(delta_fat_mass / ((delta_lean_mass +delta_fat_mass +  delta_body_mass )/2) *100) * sign(delta_body_mass),
-         date = lwr_lim + weeks(date), empty = ""
-         )  %>% 
-  filter(!is.na(delta_body_mass)) %>% 
-  select( date,body_mass,lean_mass,fat_mass,delta_body_mass,delta_lean_mass,delta_fat_mass,empty, ratio 
-  ) %>% 
-  arrange(desc(date))
-
-```
 
 Data presentation {data-icon="fa-table"}
 =====================================     
@@ -74,6 +58,20 @@ valueBox(value = paste(round(last(df_clean[!is.na(df_clean$body_mass),]$body_mas
 
 ```{r}
 
+## Creating the recap table of data
+recap_table <- df_clean %>%
+  mutate(delta_body_mass = body_mass - lag(body_mass, default = first(body_mass)),
+         delta_lean_mass = lean_mass - lag(lean_mass, default = first(lean_mass)),
+         delta_fat_mass = fat_mass - lag(fat_mass, default = first(fat_mass)),
+         # ratio  = abs(delta_fat_mass / ((delta_lean_mass +delta_fat_mass +  delta_body_mass )/2) *100) * sign(delta_body_mass),
+         # ratio  = delta_lean_mass/0.5,
+         date = lwr_lim + weeks(date), empty = ""
+         )  %>% 
+  filter(!is.na(delta_body_mass)) %>% 
+  select( date,body_mass,lean_mass,fat_mass,delta_body_mass,delta_lean_mass,delta_fat_mass) %>% 
+  arrange(desc(date))
+
+
 ## Adding conditional colors to the table for better data interpretation
 recap_table %>%
   kbl(
@@ -81,25 +79,12 @@ recap_table %>%
     align = "c",
     booktabs = T,
     linesep = "",
-    col.names = c("date","BodyMass","LeanMass","FatMass","d_BM","d_LM","d_FM","  ","perc")
-  )  %>% 
+    col.names = c("date","BodyMass","LeanMass","FatMass","d_BM","d_LM","d_FM")) %>% 
   kable_styling( position = "center") %>%
-  add_header_above(c(" ", "absolute value" = 3,"delta" = 3,"","")) %>% 
-  column_spec(5, color = if_else(recap_table$delta_body_mass >= 0 , "#808080","black")) %>% 
+  add_header_above(c(" ", "absolute value" = 3,"delta" = 3)) %>% 
+  column_spec(5, color = if_else(recap_table$delta_body_mass >= 0 , "#808080","#009FFF")) %>% 
   column_spec(6, color = if_else(recap_table$delta_lean_mass < 0  , "#ec2F4B","#009FFF")) %>% 
-  column_spec(7, color = if_else(recap_table$delta_fat_mass  > 0  , "#ec2F4B","#009FFF")) %>%
-  column_spec(8, background = case_when(
-    75 <  recap_table$ratio ~ "#ec2F4B",
-    60 <  recap_table$ratio & recap_table$ratio  <= 75 ~ "#B24E6F",
-    25 <  recap_table$ratio & recap_table$ratio  <= 60 ~ "#4486D6",
-    0 <= recap_table$ratio & recap_table$ratio  <= 25 ~ "#009FFF",
-    recap_table$ratio <  0 &  recap_table$ratio  >= -25 ~ "#ec2F4B",
-    recap_table$ratio < -25 &  recap_table$ratio  >= -50 ~ "#B24E6F",
-    recap_table$ratio < -50 &  recap_table$ratio  >= -75 ~ "#4486D6",
-    recap_table$ratio < -75 ~ "#009FFF",
-    TRUE ~  "white"
-  )
-  ) 
+  column_spec(7, color = if_else(recap_table$delta_fat_mass  > 0  , "#ec2F4B","#009FFF")) 
 
 ```
 
@@ -138,7 +123,7 @@ ggplotly(
     geom_point(aes(y = fat_perc),na.rm = T,col = "red", size= 0.75) +
     geom_line(aes(y = fat_perc),na.rm = T,col = "red") +
     geom_line(aes(y = fatperc_pred), na.rm = T, col = "grey", linetype = 3) +
-    scale_y_continuous(n.breaks = 10,limits = c(14,23)) +
+    scale_y_continuous(n.breaks = 10,limits = c(target_fp-1,23)) +
     geom_hline(yintercept = target_fp ,linetype = 2 , col = "grey") +
     scale_x_date(date_labels = "%b %y", date_breaks = "1 month") + 
     geom_point(aes(tf_fp,target_fp), shape = 3, color = "red")+
@@ -159,7 +144,7 @@ ggplotly(
     geom_point(aes(y = body_mass),na.rm = T, col = "red", size= 0.75) +
     geom_line(aes(y = body_mass),na.rm = T, col = "red") +
     geom_line(aes(y = bodymass_pred), col = "grey",na.rm = T, linetype = 3) +
-    scale_y_continuous(n.breaks = 20,limits = c(68,83)) +
+    scale_y_continuous(n.breaks = 20,limits = c(target_bm-1,83)) +
     geom_hline(yintercept = target_bm, linetype = 2, col = "grey") +
     scale_x_date(date_labels = "%b %y", date_breaks = "1 month" ) +
     geom_point(aes(tf_bm,target_bm), shape = 3, color = "red")+
