@@ -1,13 +1,15 @@
 
+## Range of data visualization in days
 t_interval <- as.double(upr_lim-lwr_lim)
 
+## Data is available in the data folder under different text files
 dr_1 <- read_delim("Data/body_mass.txt", delim = ",", show_col_types = F)
 dr_2 <- read_delim("Data/fat_perc.txt", delim = ",", show_col_types = F)
 dr_3 <- read_delim("Data/lean.txt", delim = ",", show_col_types = F)
 dr_4 <- read_delim("Data/calories.txt", delim = ",", show_col_types = F)  
 dr_7 <- read_delim("Data/prot.txt", delim = ",", show_col_types = F)  
 
-## Data import and merging 
+## Data import, merging and setting the start date to zero
 dr <- reduce(list(dr_1,dr_2,dr_3),full_join, by = "Date") %>% 
   mutate( Date = date(Date), n_day = as.double(Date) - as.double(lwr_lim)) %>% 
   reduce(.x = list(.,dr_4,dr_7), .f = full_join, by = "Date") %>%
@@ -45,7 +47,7 @@ model_data <- dr %>%
   add_predictions( model = model_bodymass , var = "bodymass_pred") %>% 
   add_predictions( model = model_fatperc , var = "fatperc_pred") 
 
-## Summarizing by date 
+## Adding the prediction to the main data set and renaming the week variable to date
 df_clean <- dr %>% 
   full_join(model_data,by =  "n_week") %>% 
   rename(date = n_week) %>%

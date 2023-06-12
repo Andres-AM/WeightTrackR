@@ -7,19 +7,27 @@ output:
 
 ```{r setup, include=FALSE}
 
+
+## Health dashboard, front end for the dashboard, calculations are available in the data import R script
+## 
+
+
 source("libraries.R")
 
-## Input parameters 
+## Input parameters that can be modified
+## Can be updated into a ShinyApp for better data interaction
+
 lwr_lim <- ymd("2022-08-01")
 upr_lim <- ymd("2023-10-01")
 w_mod <- 5
 ord <- 1
-target_fp <- 14
+target_fp <- 15
 target_bm <- 69
 
 ## Script call 
 source("data_import.R")
 
+## Calculating the predicted values
 tf_bm <- lwr_lim + ((target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]]))*7
 tf_fp <- lwr_lim + (target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])*7
 
@@ -58,13 +66,11 @@ valueBox(value = paste(round(last(df_clean[!is.na(df_clean$body_mass),]$body_mas
 
 ```{r}
 
-## Creating the recap table of data
+## Creating the recap table of data for data visualisation
 recap_table <- df_clean %>%
   mutate(delta_body_mass = body_mass - lag(body_mass, default = first(body_mass)),
          delta_lean_mass = lean_mass - lag(lean_mass, default = first(lean_mass)),
          delta_fat_mass = fat_mass - lag(fat_mass, default = first(fat_mass)),
-         # ratio  = abs(delta_fat_mass / ((delta_lean_mass +delta_fat_mass +  delta_body_mass )/2) *100) * sign(delta_body_mass),
-         # ratio  = delta_lean_mass/0.5,
          date = lwr_lim + weeks(date), empty = ""
          )  %>% 
   filter(!is.na(delta_body_mass)) %>% 
@@ -88,10 +94,11 @@ recap_table %>%
 
 ```
 
-### Consumed calories {data-height=250}
+### Consumed Kcal {data-height=250}
 
 ```{r}
 
+## Interactive table displaying using ggplotly
 ggplotly(
   df_clean %>%
     ggplot(aes(x = lwr_lim + weeks(date))) +
