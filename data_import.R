@@ -39,13 +39,51 @@ dr <- reduce(list(dr_1,dr_2,dr_3),full_join, by = "Date") %>%
                    mean, na.rm = TRUE))
 
 ## Predictive model for Body Mass and Fat Percentage
-model_bodymass <- lm( body_mass ~  poly(x = n_week,degree = ord,raw = T), dr[dr$n_week > last(dr$n_week) - w_mod,])
-model_fatperc  <- lm( fat_perc  ~  poly(x = n_week,degree = ord,raw = T), dr[dr$n_week > last(dr$n_week) - w_mod,])
+# model_bodymass <- lm( body_mass ~  poly(x = n_week,degree = ord,raw = T), dr[dr$n_week > last(dr$n_week) - w_mod,])
+# model_fatperc  <- lm( fat_perc  ~  poly(x = n_week,degree = ord,raw = T), dr[dr$n_week > last(dr$n_week) - w_mod,])
+
+model_bodymass <- lm( body_mass ~    n_week, dr[dr$n_week > last(dr$n_week) - w_mod,])
+model_fatperc  <- lm( fat_perc  ~    n_week, dr[dr$n_week > last(dr$n_week) - w_mod,])
+
 
 model_data <- dr %>% 
   data_grid( n_week = seq(last(n_week)-w_mod,t_interval %/%7 )) %>%  
-  add_predictions( model = model_bodymass , var = "bodymass_pred") %>% 
+  add_predictions( model = model_bodymass , var = "bodymass_pred",) %>% 
   add_predictions( model = model_fatperc , var = "fatperc_pred") 
+# 
+# ## new version 
+# model_data <- dr %>% 
+#   data_grid( n_week = seq(last(n_week)-w_mod,t_interval %/%7 )) %>% 
+#   augment(model_bodymass, newdata = .)
+# %>%
+#   mutate(.fitted.low = .fitted - qnorm((1 - 0.9) / 2) * .se.fit,
+#          .fitted.low = .fitted + qnorm((1 - 0.9) / 2) * .se.fit)
+# 
+# pred1 <- predict(object = model_bodymass, newdata = model_data, interval = "prediction") %>%  as_tibble()
+# names(pred1 = )
+# 
+# 
+# m <- lm(mpg ~ disp + cyl)
+# d %>%
+#   data_grid(cyl, .model = m) %>%
+#   augment(m, newdata = .) %>%
+#   mutate(.fitted.low = .fitted - qnorm((1 - 0.9) / 2) * .se.fit,
+#          .fitted.low = .fitted + qnorm((1 - 0.9) / 2) * .se.fit)
+# %>% 
+#   mutate()
+# 
+# 
+# a <- predict(object = model_bodymass,model_data, interval = "prediction")
+# # %>% 
+# predict(object = model_bodymass,model_data$n_week)
+#   
+#   mutate(  preds=predict(model_bodymass,n_week))
+# 
+# 
+# data_2 <- map(model_dna$model_dna, function(x) {
+#   preds=predict(x, data_1, se.fit=TRUE)
+#   mutate(data_1, fit=preds$fit, lwr=fit-preds$se.fit*1.96, upr=fit+preds$se.fit*1.96)
+# })
 
 ## Adding the prediction to the main data set and renaming the week variable to date
 df_clean <- dr %>% 

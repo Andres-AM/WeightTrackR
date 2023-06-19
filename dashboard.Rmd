@@ -11,7 +11,6 @@ output:
 ## Health dashboard, front end for the dashboard, calculations are available in the data import R script
 ## 
 
-
 source("libraries.R")
 
 ## Input parameters that can be modified
@@ -20,20 +19,26 @@ source("libraries.R")
 lwr_lim <- ymd("2022-08-01")
 upr_lim <- ymd("2023-10-01")
 w_mod <- 5
-ord <- 1
 target_fp <- 15
 target_bm <- 69
 
 ## Script call 
-source("data_import.R")
+# source("data_import.R")
+source("CopyOfdata_import.R")
 
 ## Calculating the predicted values
 tf_bm <- lwr_lim + ((target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]]))*7
 tf_fp <- lwr_lim + (target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])*7
 
+predictions = predict(model_bodymass, interval = "confidence")
+
+lower_bounds <- predictions[, "lwr"]
+upper_bounds <- predictions[, "upr"]
+
 ## Removing unused variables 
 rm(list = c("dr","dr_1","dr_2","dr_3","dr_4","dr_7","t_interval",
-            "model_data","ord","model_bodymass","model_fatperc"))
+            "model_data","model_bodymass","model_fatperc"))
+
 
 ```
 
@@ -135,6 +140,9 @@ ggplotly(
     scale_x_date(date_labels = "%b %y", date_breaks = "1 month") + 
     geom_point(aes(tf_fp,target_fp), shape = 3, color = "red")+
     theme(axis.text.x = element_text(angle = 45))+
+    
+    # geom_point(lower_bounds)
+    
     labs( y = "Fat percentage", x = "Date")
 )
 
