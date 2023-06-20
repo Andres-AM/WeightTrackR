@@ -16,24 +16,24 @@ source("libraries.R")
 ## Input parameters that can be modified
 ## Can be updated into a ShinyApp for better data interaction
 
-lwr_lim <- ymd("2022-08-01")
-upr_lim <- ymd("2023-10-01")
+lim_lwr <- ymd("2022-08-01")
+lim_upr <- ymd("2023-10-01")
 w_mod <- 5
 target_fp <- 15
 target_bm <- 69
 
 ## Script call 
-# source("data_import.R")
-source("CopyOfdata_import.R")
+source("data_import.R")
+# source("CopyOfdata_import.R")
 
 ## Calculating the predicted values
-tf_bm <- lwr_lim + ((target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]]))*7
-tf_fp <- lwr_lim + (target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])*7
+tf_bm <- lim_lwr + ((target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]]))*7
+tf_fp <- lim_lwr + (target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])*7
 
-predictions = predict(model_bodymass, interval = "confidence")
-
-lower_bounds <- predictions[, "lwr"]
-upper_bounds <- predictions[, "upr"]
+# predictions = predict(model_bodymass, interval = "confidence")
+# 
+# lower_bounds <- predictions[, "lwr"]
+# upper_bounds <- predictions[, "upr"]
 
 ## Removing unused variables 
 rm(list = c("dr","dr_1","dr_2","dr_3","dr_4","dr_7","t_interval",
@@ -76,7 +76,7 @@ recap_table <- df_clean %>%
   mutate(delta_body_mass = body_mass - lag(body_mass, default = first(body_mass)),
          delta_lean_mass = lean_mass - lag(lean_mass, default = first(lean_mass)),
          delta_fat_mass = fat_mass - lag(fat_mass, default = first(fat_mass)),
-         date = lwr_lim + weeks(date), empty = ""
+         date = lim_lwr + weeks(date), empty = ""
          )  %>% 
   filter(!is.na(delta_body_mass)) %>% 
   select( date,body_mass,lean_mass,fat_mass,delta_body_mass,delta_lean_mass,delta_fat_mass) %>% 
@@ -106,7 +106,7 @@ recap_table %>%
 ## Interactive table displaying using ggplotly
 ggplotly(
   df_clean %>%
-    ggplot(aes(x = lwr_lim + weeks(date))) +
+    ggplot(aes(x = lim_lwr + weeks(date))) +
     geom_point(aes(y = kcal),na.rm = T,col = "blue") +
     geom_line(aes(y = kcal),na.rm = T,col = "blue") +
     scale_y_continuous(n.breaks = 10,limits = c(1700,2300)) +
@@ -130,20 +130,23 @@ Column {data-width=500}
 
 ## Interactive table displaying using ggplotly
 ggplotly(
-  df_clean %>% 
-    ggplot(aes(x = lwr_lim + weeks(date))) +
-    geom_point(aes(y = fat_perc),na.rm = T,col = "red", size= 0.75) +
-    geom_line(aes(y = fat_perc),na.rm = T,col = "red") +
-    geom_line(aes(y = fatperc_pred), na.rm = T, col = "grey", linetype = 3) +
-    scale_y_continuous(n.breaks = 10,limits = c(target_fp-1,23)) +
-    geom_hline(yintercept = target_fp ,linetype = 2 , col = "grey") +
-    scale_x_date(date_labels = "%b %y", date_breaks = "1 month") + 
-    geom_point(aes(tf_fp,target_fp), shape = 3, color = "red")+
-    theme(axis.text.x = element_text(angle = 45))+
-    
-    # geom_point(lower_bounds)
-    
-    labs( y = "Fat percentage", x = "Date")
+df_clean %>% 
+  ggplot(aes(x = lim_lwr + weeks(date))) +
+  geom_point(aes(y = fat_perc),na.rm = T,col = "red", size= 0.75) +
+  geom_line(aes(y = fat_perc),na.rm = T,col = "red") +
+  geom_line(aes(y = fatperc_pred), na.rm = T, col = "grey", linetype = 3) +
+  geom_hline(yintercept = target_fp ,linetype = 2 , col = "grey") +
+  geom_point(aes(tf_fp,target_fp), shape = 3, color = "red")+
+  theme(axis.text.x = element_text(angle = 45)) +
+  geom_line(data = subset(df_clean,fatperc_pred_upr > target_fp - 1),
+            aes(y = fatperc_pred_upr),linewidth = 0.1)+
+  geom_line(data = subset(df_clean,fatperc_pred_lwr > target_fp - 1),
+            aes(y = fatperc_pred_lwr),linewidth = 0.1) +
+  # geom_area(data = subset(df_clean,fatperc_pred_lwr > target_fp - 1), 
+  #             aes(ymin = fatperc_pred_lwr, ymax = fatperc_pred_upr),alpha = 0.1)+
+  scale_y_continuous(n.breaks = 10,limits = c(target_fp-1,23)) +
+  scale_x_date(date_labels = "%b %y", date_breaks = "1 month") + 
+  labs( y = "Fat percentage", x = "Date")
 )
 
 ```
@@ -155,7 +158,7 @@ ggplotly(
 ## Interactive table displaying using ggplotly
 ggplotly(
   df_clean %>%   
-    ggplot(aes(x = lwr_lim + weeks(date))) +
+    ggplot(aes(x = lim_lwr + weeks(date))) +
     geom_point(aes(y = body_mass),na.rm = T, col = "red", size= 0.75) +
     geom_line(aes(y = body_mass),na.rm = T, col = "red") +
     geom_line(aes(y = bodymass_pred), col = "grey",na.rm = T, linetype = 3) +
@@ -163,6 +166,13 @@ ggplotly(
     geom_hline(yintercept = target_bm, linetype = 2, col = "grey") +
     scale_x_date(date_labels = "%b %y", date_breaks = "1 month" ) +
     geom_point(aes(tf_bm,target_bm), shape = 3, color = "red")+
+    
+    ## Confidence intervals 
+    geom_line(data = subset(df_clean,bodymass_pred_upr > target_fp - 1),
+              aes(y = bodymass_pred_upr),linewidth = 0.1)+
+    geom_line(data = subset(df_clean,bodymass_pred_lwr > target_fp - 1),
+              aes(y = bodymass_pred_lwr),linewidth = 0.1) +
+    
     theme(axis.text.x = element_text(angle = 45))+
     labs( y = "Body Mass", x = "Date")
   
@@ -180,13 +190,31 @@ Other graphs {data-icon="fa-signal"}
 ## Interactive table displaying using ggplotly
 ggplotly(
   df_clean %>% 
-    ggplot(aes(x = lwr_lim + weeks(date))) +
+    ggplot(aes(x = lim_lwr + weeks(date))) +
     geom_point(aes(y = lean_mass),na.rm = T, col = "red") +
     geom_line(aes(y = lean_mass),na.rm = T, col = "red") +
     scale_y_continuous(n.breaks = 10,limits = c(60,64)) +
     scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +
     labs( y = "Lean Body Mass [kg]",  x = "Date" )
 )
+
+
+x <- 1:10
+y1 <- c(1, 2, 3, 4, 5, 4, 3, 2, 1, 2)
+y2 <- c(2, 3, 4, 5, 6, 5, 4, 3, 2, 3)
+
+# Create a data frame with the values
+data <- data.frame(x = x, y1 = y1, y2 = y2)
+
+# Create a line plot with a band
+library(ggplot2)
+
+ggplot(data, aes(x = x)) +
+  geom_line(aes(y = y1), color = "blue") +  # Line plot for y1
+  geom_line(aes(y = y2), color = "red") +   # Line plot for y2
+  geom_ribbon(aes(ymin = y1, ymax = y2), fill = "gray", alpha = 0.5) +
+  labs(x = "x", y = "y") +
+  theme_minimal()
 
 ```
 
