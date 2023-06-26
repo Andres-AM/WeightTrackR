@@ -8,36 +8,27 @@ output:
 ```{r setup, include=FALSE}
 
 ## Health dashboard, front end for the dashboard, calculations are available in the data import R script
-## 
 
 source("libraries.R")
 
 ## Input parameters that can be modified
 ## Can be updated into a ShinyApp for better data interaction
-
 lim_lwr <- ymd("2022-08-01")
-lim_upr <- ymd("2023-10-01")
-w_mod <- 5
-target_fp <- 15
-target_bm <- 69
+lim_upr <- ymd("2023-12-01")
+w_mod <- 7
+target_fp <- 13
+target_bm <- 68
 
 ## Script call 
 source("data_import.R")
-# source("CopyOfdata_import.R")
 
 ## Calculating the predicted values
 tf_bm <- lim_lwr + ((target_bm - model_bodymass$coefficients[[1]]) / (model_bodymass$coefficients[[2]]))*7
 tf_fp <- lim_lwr + (target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])*7
 
-# predictions = predict(model_bodymass, interval = "confidence")
-# 
-# lower_bounds <- predictions[, "lwr"]
-# upper_bounds <- predictions[, "upr"]
-
 ## Removing unused variables 
 rm(list = c("dr","dr_1","dr_2","dr_3","dr_4","dr_7","t_interval",
             "model_data","model_bodymass","model_fatperc"))
-
 
 ```
 
@@ -70,31 +61,42 @@ valueBox(value = paste(round(last(df_clean[!is.na(df_clean$body_mass),]$body_mas
 
 ```{r}
 
-## Creating the recap table of data for data visualisation
+# Calculate delta values for body_mass, lean_mass, and fat_mass based on lagged values
 recap_table <- df_clean %>%
   mutate(delta_body_mass = body_mass - lag(body_mass, default = first(body_mass)),
          delta_lean_mass = lean_mass - lag(lean_mass, default = first(lean_mass)),
          delta_fat_mass = fat_mass - lag(fat_mass, default = first(fat_mass)),
          date = lim_lwr + weeks(date), empty = ""
-         )  %>% 
+  )  %>% 
+
+  # Remove rows with NA values for delta_body_mass
   filter(!is.na(delta_body_mass)) %>% 
-  select( date,body_mass,lean_mass,fat_mass,delta_body_mass,delta_lean_mass,delta_fat_mass) %>% 
+
+  # Select specific columns and arrange them in descending order of date
+  select(date, body_mass, lean_mass, fat_mass, delta_body_mass, delta_lean_mass, delta_fat_mass) %>% 
   arrange(desc(date))
 
-
-## Adding conditional colors to the table for better data interpretation
+# Generate a formatted table using kableExtra package
 recap_table %>%
   kbl(
     digits = 2,
     align = "c",
     booktabs = T,
     linesep = "",
-    col.names = c("date","BodyMass","LeanMass","FatMass","d_BM","d_LM","d_FM")) %>% 
-  kable_styling( position = "center") %>%
-  add_header_above(c(" ", "absolute value" = 3,"delta" = 3)) %>% 
-  column_spec(5, color = if_else(recap_table$delta_body_mass >= 0 , "#808080","#009FFF")) %>% 
-  column_spec(6, color = if_else(recap_table$delta_lean_mass < 0  , "#ec2F4B","#009FFF")) %>% 
-  column_spec(7, color = if_else(recap_table$delta_fat_mass  > 0  , "#ec2F4B","#009FFF")) 
+    col.names = c("date", "BodyMass", "LeanMass", "FatMass", "d_BM", "d_LM", "d_FM")
+  ) %>% 
+
+  # Apply center alignment to the table
+  kable_styling(position = "center") %>%
+  
+  # Add header above specific columns
+  add_header_above(c(" ", "absolute value" = 3, "delta" = 3)) %>% 
+  
+  # Specify column colors based on conditional statements
+  column_spec(5, color = if_else(recap_table$delta_body_mass >= 0 , "#808080", "#009FFF")) %>% 
+  column_spec(6, color = if_else(recap_table$delta_lean_mass < 0  , "#ec2F4B", "#009FFF")) %>% 
+  column_spec(7, color = if_else(recap_table$delta_fat_mass  > 0  , "#ec2F4B", "#009FFF")) 
+
 
 ```
 
@@ -102,17 +104,17 @@ recap_table %>%
 
 ```{r}
 
-## Interactive table displaying using ggplotly
+# Convert the ggplot object to a plotly object
 ggplotly(
   df_clean %>%
-    ggplot(aes(x = lim_lwr + weeks(date))) +
-    geom_point(aes(y = kcal),na.rm = T,col = "blue") +
-    geom_line(aes(y = kcal),na.rm = T,col = "blue") +
-    scale_y_continuous(n.breaks = 10,limits = c(1700,2300)) +
-    scale_x_date(date_labels = "%b %y", date_breaks = "1 month",) +
-    geom_hline(yintercept = c(1800,2000,2200) ,linetype = 2 , col = "red")+
-    theme(axis.text.x = element_text(angle = 45))+
-    labs( y = "kcal", x = "Date")
+    ggplot(aes(x = lim_lwr + weeks(date))) +  # Set the x-axis values as the sum of the lower limit and the number of weeks since a certain date
+    geom_point(aes(y = kcal), na.rm = T, col = "blue") +  # Add blue points for the kcal values, removing any missing values
+    geom_line(aes(y = kcal), na.rm = T, col = "blue") +  # Add a blue line connecting the points, removing any missing values
+    scale_y_continuous(n.breaks = 10, limits = c(1700, 2300)) +  # Set the y-axis breaks and limits
+    scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +  # Set the x-axis labels to display month and year, with breaks every month
+    geom_hline(yintercept = c(1800, 2000, 2200), linetype = 2, col = "red") +  # Add horizontal lines at y-values 1800, 2000, and 2200, with dashed red lines
+    theme(axis.text.x = element_text(angle = 45)) +  # Rotate x-axis labels by 45 degrees
+    labs(y = "kcal", x = "Date")  # Set the y-axis label as "kcal" and x-axis label as "Date"
 )
 
 ```
@@ -129,24 +131,22 @@ Column {data-width=500}
 
 ## Interactive table displaying using ggplotly
 ggplotly(
-df_clean %>% 
-  ggplot(aes(x = lim_lwr + weeks(date))) +
-  geom_point(aes(y = fat_perc),na.rm = T,col = "red", size= 0.75) +
-  geom_line(aes(y = fat_perc),na.rm = T,col = "red") +
-  geom_line(aes(y = fatperc_pred), na.rm = T, col = "grey", linetype = 3) +
-  geom_hline(yintercept = target_fp ,linetype = 2 , col = "grey") +
-  geom_point(aes(tf_fp,target_fp), shape = 3, color = "red")+
-  theme(axis.text.x = element_text(angle = 45)) +
-  geom_line(data = subset(df_clean,fatperc_pred_upr > target_fp - 1),
-            aes(y = fatperc_pred_upr),linewidth = 0.1)+
-  geom_line(data = subset(df_clean,fatperc_pred_lwr > target_fp - 1),
-            aes(y = fatperc_pred_lwr),linewidth = 0.1) +
-  # geom_area(data = subset(df_clean,fatperc_pred_lwr > target_fp - 1), 
-  #             aes(ymin = fatperc_pred_lwr, ymax = fatperc_pred_upr),alpha = 0.1)+
-  scale_y_continuous(n.breaks = 10,limits = c(target_fp-1,23)) +
-  scale_x_date(date_labels = "%b %y", date_breaks = "1 month") + 
-  labs( y = "Fat percentage", x = "Date")
+  df_clean %>% 
+    ggplot(aes(x = lim_lwr + weeks(date))) +  # Set x-axis values based on 'lim_lwr' and 'date'
+    geom_point(aes(y = fat_perc), na.rm = T, col = "red", size = 0.75) +  # Add red points with 'fat_perc' on y-axis
+    geom_line(aes(y = fat_perc), na.rm = T, col = "red") +  # Connect points with red lines
+    geom_line(aes(y = fatperc_pred), na.rm = T, col = "grey", linetype = 3) +  # Add grey dashed line based on 'fatperc_pred' values
+    geom_hline(yintercept = target_fp, linetype = 2, col = "grey") +  # Add grey horizontal line at 'target_fp'
+    geom_point(aes(tf_fp, target_fp), shape = 3, color = "red") +  # Add red point at coordinates ('tf_fp', 'target_fp')
+    theme(axis.text.x = element_text(angle = 45)) +  # Rotate x-axis labels by 45 degrees
+    geom_line(data = subset(df_clean, fatperc_pred_upr > target_fp - 1), aes(y = fatperc_pred_upr), linewidth = 0.1) +  # Add thin line for 'fatperc_pred_upr' values above 'target_fp - 1'
+    geom_line(data = subset(df_clean, fatperc_pred_lwr > target_fp - 1), aes(y = fatperc_pred_lwr), linewidth = 0.1) +  # Add thin line for 'fatperc_pred_lwr' values above 'target_fp - 1'
+    # geom_area(data = subset(df_clean, fatperc_pred_lwr > target_fp - 1), aes(ymin = fatperc_pred_lwr, ymax = fatperc_pred_upr), alpha = 0.1) +  # Add shaded area between 'fatperc_pred_lwr' and 'fatperc_pred_upr'
+    scale_y_continuous(n.breaks = 10, limits = c(target_fp - 1, 23)) +  # Set y-axis limits and breaks
+    scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +  # Format x-axis labels as abbreviated month and year, with breaks at every month
+    labs(y = "Fat percentage", x = "Date")  # Set y-axis and x-axis labels
 )
+
 
 ```
 
@@ -197,23 +197,6 @@ ggplotly(
     labs( y = "Lean Body Mass [kg]",  x = "Date" )
 )
 
-
-x <- 1:10
-y1 <- c(1, 2, 3, 4, 5, 4, 3, 2, 1, 2)
-y2 <- c(2, 3, 4, 5, 6, 5, 4, 3, 2, 3)
-
-# Create a data frame with the values
-data <- data.frame(x = x, y1 = y1, y2 = y2)
-
-# Create a line plot with a band
-library(ggplot2)
-
-ggplot(data, aes(x = x)) +
-  geom_line(aes(y = y1), color = "blue") +  # Line plot for y1
-  geom_line(aes(y = y2), color = "red") +   # Line plot for y2
-  geom_ribbon(aes(ymin = y1, ymax = y2), fill = "gray", alpha = 0.5) +
-  labs(x = "x", y = "y") +
-  theme_minimal()
 
 ```
 
