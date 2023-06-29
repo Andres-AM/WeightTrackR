@@ -7,7 +7,8 @@ output:
 
 ```{r setup, include=FALSE}
 
-## Health dashboard, front end for the dashboard, calculations are available in the data import R script
+## Health dashboard, front end for the dashboard, 
+## calculations are available in the data import R script
 
 source("libraries.R")
 
