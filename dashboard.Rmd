@@ -13,12 +13,12 @@ output:
 source("libraries.R")
 
 ## Input parameters that can be modified
-## Can be updated into a ShinyApp for better data interaction
+## Can be updated into a Shiny App for better data interaction
 lim_lwr <- ymd("2022-08-01")
 lim_upr <- ymd("2023-12-01")
-w_mod <- 7
-target_fp <- 13
-target_bm <- 68
+w_mod <- 12
+target_fp <- 15
+target_bm <- 70
 
 ## Script call 
 source("data_import.R")
@@ -50,11 +50,13 @@ Using a linear model, forecast the anticipated duration for reaching a desired v
 ```{r}
 
 ## KPI values on the top left corner 
-valueBox(value = paste(round(last(df_clean[!is.na(df_clean$body_mass),]$body_mass),2),
-                       " kg and ", 
-                       round(last(df_clean[!is.na(df_clean$fat_perc),]$fat_perc),2),
-                       " fat [%]"),
-         icon = "ion-ios-body")
+valueBox(
+  value = paste(round(last(df_clean[!is.na(df_clean$body_mass),]$body_mass),2),
+                " kg and ", 
+                round(last(df_clean[!is.na(df_clean$fat_perc),]$fat_perc),2),
+                " fat [%]"
+                ),
+  icon = "ion-ios-body")
 
 ```
 
@@ -131,8 +133,22 @@ Column {data-width=500}
 ```{r }
 
 ## Interactive table displaying using ggplotly
+
+test_bis <-  df_clean %>% 
+    mutate(test = fatperc_pred +2)
+
+# Create a sample data frame
+df <- data.frame(Column1 = numeric(10))  # Create an empty column with 10 rows
+
+# Create a sequence of numbers starting from 1 and incrementing by 0.5
+df$Column1 <- seq(1, length.out = nrow(df), by = 0.5)
+
+# Print the updated data frame
+print(df)
+
 ggplotly(
   df_clean %>% 
+    mutate(test = fatperc_pred +2)
     ggplot(aes(x = lim_lwr + weeks(date))) +  # Set x-axis values based on 'lim_lwr' and 'date'
     geom_point(aes(y = fat_perc), na.rm = T, col = "red", size = 0.75) +  # Add red points with 'fat_perc' on y-axis
     geom_line(aes(y = fat_perc), na.rm = T, col = "red") +  # Connect points with red lines

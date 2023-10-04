@@ -40,17 +40,17 @@ dr <- reduce(list(dr_1, dr_2, dr_3), full_join, by = "Date") %>%
   group_by(n_week, n_day) %>%
   summarise(
     across(c(body_mass, fat_mass, lean_mass, fat_perc, lean_perc, prot_g),
-      mean,
-      na.rm = TRUE
+           mean,
+           na.rm = TRUE
     ),
     kcal = mean(kcal[kcal > 1600], na.rm = TRUE)
   ) %>%
   group_by(n_week) %>%
   summarise(
     across(c(body_mass, fat_mass, lean_mass, fat_perc, lean_perc, prot_g, kcal),
-    mean,
-    na.rm = TRUE
-  ))
+           mean,
+           na.rm = TRUE
+    ))
 
 ## Predictive model for Body Mass and Fat Percentage
 model_bodymass <- lm(
@@ -77,6 +77,10 @@ names(model_data) <- c(
   "fatperc_pred", "fatperc_pred_lwr", "fatperc_pred_upr"
 )
 
+model_data_bis <-  model_data %>% 
+  mutate(target = seq(dr[dr$n_week == last(dr$n_week) - w_mod, ]$fat_perc,by = 0.5, length.out = nrow(model_data)))
+
+
 ## Adding the prediction to the main data set and renaming the week variable to date
 df_clean <- dr %>%
   full_join(model_data, by = "n_week") %>%
@@ -86,3 +90,6 @@ df_clean <- dr %>%
     fat_perc, fatperc_pred, fatperc_pred_lwr, fatperc_pred_upr, kcal,
     lean_perc, prot_g, fat_mass, lean_mass
   )
+
+
+
