@@ -9,7 +9,7 @@ dr_4 <- read_delim("Data/calories.txt", delim = ",", show_col_types = F)
 dr_7 <- read_delim("Data/prot.txt", delim = ",", show_col_types = F)
 
 ## Data import, merging and setting the start date to zero
-dr <- reduce(list(dr_1, dr_2, dr_3), full_join, by = "Date") %>%
+dr1 <- reduce(list(dr_1, dr_2, dr_3), full_join, by = "Date") %>%
   mutate(Date = date(Date), n_day = as.double(Date) - as.double(lim_lwr)) %>%
   reduce(.x = list(., dr_4, dr_7), .f = full_join, by = "Date") %>%
   ## Renaming variables for better clarity
@@ -44,7 +44,9 @@ dr <- reduce(list(dr_1, dr_2, dr_3), full_join, by = "Date") %>%
            na.rm = TRUE
     ),
     kcal = mean(kcal[kcal > 1600], na.rm = TRUE)
-  ) %>%
+  )
+
+dr <- dr1 %>%
   group_by(n_week) %>%
   summarise(
     across(c(body_mass, fat_mass, lean_mass, fat_perc, lean_perc, prot_g, kcal),

@@ -6,6 +6,7 @@ source("FUN.R")
 ### UI part of the application
 ui <- fluidPage(theme = shinytheme("flatly"),
                 tabsetPanel(
+                  
                   tabPanel('Overview',
                            titlePanel("Health Dashboard"),
                            sidebarLayout(
@@ -15,17 +16,15 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                
                                dateRangeInput(inputId = "date_lim",
                                               label = "Date range for plots",
-                                              min = "2022-08-01",
+                                              min   = "2022-07-01",
                                               start = "2022-08-01",
-                                              end = "2023-11-01"
+                                              end   = "2023-11-01"
                                ),
                                
                                selectInput( inputId = "phase_type",
                                             label = "Phase Type",
                                             choices = c("Bulking",
-                                                        "Cutting"
-                                                        # ,
-                                                        # "maintaining"
+                                                        "Cutting" 
                                             )
                                ),
                                
@@ -34,6 +33,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                                 numericInput(inputId = "bulk_val",
                                                              label = "Bulking target, BM in kg/week",
                                                              value = "0.5",
+                                                             step = 0.1,
                                                              min = 0,
                                                 ),
                                                 
@@ -47,6 +47,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                                 numericInput(inputId = "cut_val",
                                                              label = "Cutting target, BM in kg/week",
                                                              value = "0.7",
+                                                             step = 0.1,
                                                              min = 0,
                                                 ),
                                                 
@@ -55,18 +56,19 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                                          This totals for 3kg/month of body mass"),
                                ),
                                
-                               hr(),
-                               
-                               h3("Prediction"),
-                               
-                               dateRangeInput(inputId = "date_phase",
-                                              label = "Date interval for prediction:",
-                                              min = "2022-08-01",
-                                              start = "2023-08-01",
-                                              end = "2023-09-30"
-                               ),
-                               
                                conditionalPanel(condition = "input.plot_choice == 'Fat Percentage (%)'",
+                                                
+                                                hr(),
+                                                
+                                                h3("Prediction"),
+                                                
+                                                dateRangeInput(inputId = "date_phase",
+                                                               label = "Date interval for prediction:",
+                                                               min = "2022-08-01",
+                                                               start = "2023-08-01",
+                                                               end = "2023-09-30"
+                                                ),
+                                                
                                                 
                                                 sliderInput(inputId = "target_fp",
                                                             label = "Target Fat Percentage (%)",
@@ -80,6 +82,17 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                ),
                                
                                conditionalPanel(condition = "input.plot_choice == 'Body Mass (kg)'",
+                                                
+                                                hr(),
+                                                
+                                                h3("Prediction"),
+                                                
+                                                dateRangeInput(inputId = "date_phase",
+                                                               label = "Date interval for prediction:",
+                                                               min = "2022-08-01",
+                                                               start = "2023-08-01",
+                                                               end = "2023-09-30"
+                                                ),
                                                 
                                                 sliderInput("target_bm",
                                                             label = "Target Body Mass (kg)",
@@ -112,9 +125,9 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                            )
                   ),
                   tabPanel('Raw Data',
-                           
+
                            dataTableOutput(outputId = "raw_data", width = "100%", height = "auto", fill = TRUE),
-                           
+
                   ),
                   tabPanel('Options',
                            titlePanel("Parameters"),
@@ -149,7 +162,7 @@ server <- function(input, output) {
       target_bm    = input$target_bm)
     
     # Recap table as the main table output 
-    recap_table_tidy <- fun_output$recap_table %>% 
+    table_data <- fun_output$table_data %>% 
       mutate( 
         date =  format(date, "%B %d, %Y"), 
         fat_perc = paste0("<b>",round(fat_perc,input$round_value)," <b>"," %"),
@@ -164,20 +177,18 @@ server <- function(input, output) {
                            " ratio: ", round(delta_fat_mass/((delta_lean_mass + delta_fat_mass + delta_body_mass)/2)*100, input$round_value), " %")
       )
     
-    raw_data <- fun_output$dr %>% 
-      ungroup() %>%  
-      mutate( 
-        # date = dayte(input$date_lim[1] + n_day),  
-        date = date(input$date_lim[1] + n_day +1),
-        
+    raw_data <- fun_output$raw_data %>%
+      ungroup() %>%
+      mutate(
+        date = Date,
         body_mass = round(body_mass,input$round_value),
         fat_mass  = round(fat_mass ,input$round_value),
         lean_mass = round(lean_mass,input$round_value),
         fat_perc  = round(fat_perc ,input$round_value),
-      ) %>% 
+      ) %>%
       dplyr::arrange(desc(date))
-    
-    results <- list(fun_output = fun_output, raw_data = raw_data, recap_table_tidy = recap_table_tidy, lim_lwr = lim_lwr, lim_upr = lim_upr)
+
+    results <- list(fun_output = fun_output, raw_data = raw_data, table_data = table_data, lim_lwr = lim_lwr, lim_upr = lim_upr)
     
   })
   
@@ -206,7 +217,7 @@ server <- function(input, output) {
     
     if(input$phase_type == "Bulking") { 
       
-      output_tidy()$recap_table_tidy  %>%
+      output_tidy()$table_data  %>%
         select(date,fat_perc,BM,LM,FM,score_bulk) %>%
         datatable(
           colnames = c('Date (weeks)',
@@ -226,7 +237,7 @@ server <- function(input, output) {
       
     } else if(input$phase_type == "Cutting") { 
       
-      output_tidy()$recap_table_tidy  %>%
+      output_tidy()$table_data %>%
         select(date,fat_perc,BM,LM,FM,score_cut) %>% 
         datatable(
           colnames = c('Date (Week)',
@@ -253,8 +264,9 @@ server <- function(input, output) {
     tf_fp <- output_tidy()$lim_lwr + (input$target_fp - output_tidy()$fun_output$model_fatperc$coefficients[[1]]) / (output_tidy()$fun_output$model_fatperc$coefficients[[2]])*7
     tf_bm <- output_tidy()$lim_lwr + (input$target_bm - output_tidy()$fun_output$model_bodymass$coefficients[[1]]) / (output_tidy()$fun_output$model_bodymass$coefficients[[2]])*7
     
-    plot_base <-  output_tidy()$fun_output$df_clean %>%
-      mutate(Date = output_tidy()$lim_lwr + weeks(date)) %>%                        # Standardizing the dates, to start at output_tidy()$lim_lwr + weeks converted to days
+    ## Plot base to add each variable, and avoid code redundancy 
+    plot_base <-  output_tidy()$fun_output$plot_data %>%
+      mutate(Date = output_tidy()$lim_lwr + weeks(n_week)) %>%                                          # Standardizing the dates, to start at output_tidy()$lim_lwr + weeks converted to days
       ggplot(aes(x = Date)) +
       scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +                                   # Format x-axis labels as abbreviated month and year, with breaks at every month
       theme(axis.text.x = element_text(angle = 0)) 

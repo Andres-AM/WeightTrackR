@@ -28,8 +28,8 @@ tf_bm <- lim_lwr + ((target_bm - model_bodymass$coefficients[[1]]) / (model_body
 tf_fp <- lim_lwr + (target_fp - model_fatperc$coefficients[[1]]) /  (model_fatperc$coefficients[[2]])*7
 
 ## Removing unused variables 
-rm(list = c("dr","dr_1","dr_2","dr_3","dr_4","dr_7","t_interval",
-            "model_data","model_bodymass","model_fatperc"))
+# rm(list = c("dr","dr_1","dr_2","dr_3","dr_4","dr_7","t_interval",
+#             "model_data","model_bodymass","model_fatperc"))
 
 ```
 
@@ -134,21 +134,8 @@ Column {data-width=500}
 
 ## Interactive table displaying using ggplotly
 
-test_bis <-  df_clean %>% 
-    mutate(test = fatperc_pred +2)
-
-# Create a sample data frame
-df <- data.frame(Column1 = numeric(10))  # Create an empty column with 10 rows
-
-# Create a sequence of numbers starting from 1 and incrementing by 0.5
-df$Column1 <- seq(1, length.out = nrow(df), by = 0.5)
-
-# Print the updated data frame
-print(df)
-
 ggplotly(
   df_clean %>% 
-    mutate(test = fatperc_pred +2)
     ggplot(aes(x = lim_lwr + weeks(date))) +  # Set x-axis values based on 'lim_lwr' and 'date'
     geom_point(aes(y = fat_perc), na.rm = T, col = "red", size = 0.75) +  # Add red points with 'fat_perc' on y-axis
     geom_line(aes(y = fat_perc), na.rm = T, col = "red") +  # Connect points with red lines
