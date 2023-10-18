@@ -58,3 +58,6 @@ data1 <- data %>%
   select(date, phase,body_mass, lean_mass, fat_mass, fat_perc, delta_body_mass, delta_lean_mass, delta_fat_mass) %>% 
   arrange(desc(date))
 
+
+
+
