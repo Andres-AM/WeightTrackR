@@ -77,6 +77,8 @@ data_tidy <- function(
              \(x) mean(x, na.rm = TRUE)
       ))
   
+  # browser()
+  
   ## Predictive model for Body Mass and Fat Percentage
   model_bodymass <- lm(
     body_mass ~ n_week,
@@ -90,8 +92,6 @@ data_tidy <- function(
   
   ## Adding confidence intervals
   model_data <- raw_data_week %>%
-    # data_grid(n_week = seq(last(n_week) - w_mod, t_interval %/% 7)) %>%
-    # data_grid(n_week = seq(lim_lwr_mod, t_interval %/% 7)) %>%
     data_grid(n_week = seq(lim_lwr_mod, lim_upr_week)) %>%
     data.frame(
       predict(model_bodymass, ., interval = "confidence"),

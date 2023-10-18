@@ -6,7 +6,6 @@ source("FUN.R")
 ### UI part of the application
 ui <- fluidPage(theme = shinytheme("flatly"),
                 tabsetPanel(
-                  
                   tabPanel('Overview',
                            titlePanel("Health Dashboard"),
                            sidebarLayout(
@@ -22,7 +21,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                ),
                                
                                selectInput( inputId = "phase_type",
-                                            label = "Phase Type",
+                                            label = "Phase Type",selected = "Cutting",
                                             choices = c("Bulking",
                                                         "Cutting" 
                                             )
@@ -136,7 +135,12 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                         label = "round value",
                                         value = "1",
                                         min = 0,
-                           )
+                           ),
+                           textInput(inputId = "phase_date",
+                                     label ="phase_date",
+                                     value = "2022-08-01;2023-08-01;2023-10-16"),
+                           
+                           verbatimTextOutput(outputId = "dates")
                   )
                 )
 )
@@ -144,6 +148,12 @@ ui <- fluidPage(theme = shinytheme("flatly"),
 
 ### Server part of the Shiny App
 server <- function(input, output) {
+  
+  output$dates <- renderPrint({
+    
+    stringr::str_split_1(input$phase_date,pattern = ";")
+    
+  })
   
   ## Reactive output from function
   output_tidy <- reactive({ 
