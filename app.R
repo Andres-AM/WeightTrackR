@@ -159,8 +159,8 @@ server <- function(input, output) {
   output_tidy <- reactive({ 
     
     # Adjust the date to always start on Mondays, start of the week
-    lim_lwr <- input$date_lim[1] + days(8- wday(input$date_lim[1]))
-    lim_upr <- input$date_lim[2] + days(8- wday(input$date_lim[2]))
+    lim_lwr <- floor_date(date(input$date_lim[1]),unit = "week",week_start = 1)
+    lim_upr <- floor_date(date(input$date_lim[2]),unit = "week",week_start = 1)
     
     # Input values to data_tidy function
     fun_output <- data_tidy(

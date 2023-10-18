@@ -1,4 +1,14 @@
 
+## Function to transform input date to number of week from start date (lim_lwr in this function)
+## Floors the date to week
+floor_week <- function(date = date,lim_lwr = lim_lwr ){
+  
+  # date <-  week(date) - week(lim_lwr)
+  date <- (as.double(date(date) - date(lim_lwr))) %/% 7
+  return(date)
+  
+}
+
 data_tidy <- function(
     lim_lwr = "2022-08-01",
     lim_upr = "2023-12-01",
@@ -12,15 +22,12 @@ data_tidy <- function(
   lim_lwr <- date(lim_lwr)
   lim_upr <- date(lim_upr)
   
-  lim_upr_week <- (as.double(lim_upr) - as.double(lim_lwr)) %/% 7
+  lim_upr_week <- floor_week(lim_upr,lim_lwr)
   
-  lim_lwr_mod <- (as.double(date(lim_lwr_mod)) - as.double(lim_lwr)) %/% 7
-  lim_upr_mod <- (as.double(date(lim_upr_mod)) - as.double(lim_lwr)) %/% 7
+  lim_lwr_mod <-  floor_week(lim_lwr_mod,lim_lwr)
+  lim_upr_mod <-  floor_week(lim_upr_mod,lim_lwr)
   
-  ## Range of data visualization in days, number of days between lim_upr and lim_lwr
-  t_interval <- as.double(lim_upr - lim_lwr)
-  
-  # t_interval <- as.double(lim_upr_mod - lim_lwr_mod)
+  browser()
   
   ## Data is available in the data folder under different text files
   dr_1 <- read_delim("Data/body_mass.txt", delim = ",", show_col_types = F)
@@ -46,14 +53,8 @@ data_tidy <- function(
       fat_perc = fat_perc * 100,
       fat_mass = fat_perc / 100 * body_mass,
       ## bug correction from data set
-      fat_perc = replace(
-        fat_perc,
-        Date >= date("2022-11-01") & Date <= date("2022-11-10"), NA
-      ),
-      lean_mass = replace(
-        lean_mass,
-        Date >= date("2022-11-01") & Date <= date("2022-11-10"), NA
-      ),
+      fat_perc = replace( fat_perc, Date >= date("2022-11-01") & Date <= date("2022-11-10"), NA),
+      lean_mass = replace( lean_mass, Date >= date("2022-11-01") & Date <= date("2022-11-10"), NA),
       lean_perc = (body_mass - (body_mass * (fat_perc / 100))) / body_mass * 100,
       n_week = n_day %/% 7
     ) %>%
@@ -61,7 +62,7 @@ data_tidy <- function(
     filter(!(is.na(body_mass)) & Date >= lim_lwr)  %>%
     select(Date, n_day, n_week, everything()) %>%
     ## Summarizing by date
-    group_by(n_week, n_day,Date) %>%
+    group_by(n_week, n_day, Date) %>%
     summarise(
       across(c(body_mass, fat_mass, lean_mass, fat_perc, lean_perc, prot_g),
              \(x) mean(x, na.rm = TRUE)
@@ -76,8 +77,6 @@ data_tidy <- function(
       across(c(body_mass, fat_mass, lean_mass, fat_perc, lean_perc, prot_g, kcal),
              \(x) mean(x, na.rm = TRUE)
       ))
-  
-  # browser()
   
   ## Predictive model for Body Mass and Fat Percentage
   model_bodymass <- lm(
@@ -114,6 +113,8 @@ data_tidy <- function(
       lean_perc, prot_g, fat_mass, lean_mass
     )
   
+  
+  ## function on this to do 
   # Calculate delta values for body_mass, lean_mass, and fat_mass based on lagged values
   table_data <- raw_data_week %>%
     mutate(delta_body_mass = body_mass - lag(body_mass, default = first(body_mass)),
