@@ -59,5 +59,3 @@ data1 <- data %>%
   arrange(desc(date))
 
 
-
-
