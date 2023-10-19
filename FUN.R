@@ -1,10 +1,18 @@
 
 ## Function to transform input date to number of week from start date (lim_lwr in this function)
 ## Floors the date to week
-floor_week <- function(date = date,lim_lwr = lim_lwr ){
+date_to_n_week <- function(date = date,lim_lwr = lim_lwr ){
   
-  # date <-  week(date) - week(lim_lwr)
   date <- (as.double(date(date) - date(lim_lwr))) %/% 7
+  
+  return(date)
+  
+}
+
+n_week_to_date <- function(n_week = n_week,lim_lwr = lim_lwr ){
+  
+  date <- lim_lwr + weeks((n_week))
+  
   return(date)
   
 }
@@ -22,12 +30,10 @@ data_tidy <- function(
   lim_lwr <- date(lim_lwr)
   lim_upr <- date(lim_upr)
   
-  lim_upr_week <- floor_week(lim_upr,lim_lwr)
+  lim_upr_week <- date_to_n_week(lim_upr,lim_lwr)
   
-  lim_lwr_mod <-  floor_week(lim_lwr_mod,lim_lwr)
-  lim_upr_mod <-  floor_week(lim_upr_mod,lim_lwr)
-  
-  browser()
+  lim_lwr_mod <-  date_to_n_week(lim_lwr_mod,lim_lwr)
+  lim_upr_mod <-  date_to_n_week(lim_upr_mod,lim_lwr)
   
   ## Data is available in the data folder under different text files
   dr_1 <- read_delim("Data/body_mass.txt", delim = ",", show_col_types = F)
@@ -120,7 +126,7 @@ data_tidy <- function(
     mutate(delta_body_mass = body_mass - lag(body_mass, default = first(body_mass)),
            delta_lean_mass = lean_mass - lag(lean_mass, default = first(lean_mass)),
            delta_fat_mass = fat_mass - lag(fat_mass, default = first(fat_mass)),
-           date = lim_lwr + weeks(n_week), empty = ""
+           date = lim_lwr + weeks(n_week)
     )   %>%
     # Select specific columns and arrange them in descending order of date
     select(date, body_mass, lean_mass, fat_mass, fat_perc, delta_body_mass, delta_lean_mass, delta_fat_mass) %>% 
