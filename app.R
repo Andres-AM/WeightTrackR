@@ -13,13 +13,6 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                
                                h3("Input Parameters"),
                                
-                               dateRangeInput(inputId = "date_lim",
-                                              label = "Date range for plots",
-                                              min   = "2022-07-01",
-                                              start = "2022-08-01",
-                                              end   = "2023-11-01"
-                               ),
-                               
                                selectInput( inputId = "phase_type",
                                             label = "Phase Type",selected = "Cutting",
                                             choices = c("Bulking",
@@ -130,6 +123,13 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                   ),
                   tabPanel('Options',
                            titlePanel("Parameters"),
+                           
+                           dateRangeInput(inputId = "date_lim",
+                                          label = "Date range for plots",
+                                          min   = "2022-08-01",
+                                          start = "2022-08-01",
+                                          end   = "2023-11-01"
+                           ),
                            
                            numericInput(inputId = "round_value",
                                         label = "round value",
@@ -273,6 +273,8 @@ server <- function(input, output) {
     
     tf_fp <- output_tidy()$lim_lwr + (input$target_fp - output_tidy()$fun_output$model_fatperc$coefficients[[1]]) / (output_tidy()$fun_output$model_fatperc$coefficients[[2]])*7
     tf_bm <- output_tidy()$lim_lwr + (input$target_bm - output_tidy()$fun_output$model_bodymass$coefficients[[1]]) / (output_tidy()$fun_output$model_bodymass$coefficients[[2]])*7
+    
+    # browser()
     
     ## Plot base to add each variable, and avoid code redundancy 
     plot_base <-  output_tidy()$fun_output$plot_data %>%

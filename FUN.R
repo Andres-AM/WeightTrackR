@@ -9,6 +9,20 @@ date_to_n_week <- function(date = date,lim_lwr = lim_lwr ){
   
 }
 
+
+table_add_delta <- function(data = data, lim_lwr = lim_lwr){
+  
+  data <- data %>% 
+    mutate(date = n_week_to_date(n_week,lim_lwr),
+           delta_body_mass = body_mass - lag(body_mass, default = first(body_mass)),
+           delta_lean_mass = lean_mass - lag(lean_mass, default = first(lean_mass)),
+           delta_fat_mass = fat_mass - lag(fat_mass, default = first(fat_mass))) %>%
+    select(date, phase,body_mass, lean_mass, fat_mass, fat_perc, delta_body_mass, delta_lean_mass, delta_fat_mass) %>% 
+    arrange(desc(date))
+  
+  return(data)
+}
+
 n_week_to_date <- function(n_week = n_week,lim_lwr = lim_lwr ){
   
   date <- lim_lwr + weeks((n_week))
@@ -95,32 +109,40 @@ data_tidy <- function(
     raw_data_week[lim_lwr_mod <= raw_data_week$n_week & raw_data_week$n_week <= lim_upr_mod, ]
   )
   
+  model_leanmass <- lm(
+    lean_mass ~ n_week,
+    raw_data_week[lim_lwr_mod <= raw_data_week$n_week & raw_data_week$n_week <= lim_upr_mod, ]
+  )
+  
   ## Adding confidence intervals
   model_data <- raw_data_week %>%
     data_grid(n_week = seq(lim_lwr_mod, lim_upr_week)) %>%
     data.frame(
       predict(model_bodymass, ., interval = "confidence"),
-      predict(model_fatperc, ., interval = "confidence")
+      predict(model_fatperc, ., interval = "confidence"),
+      predict(model_leanmass, ., interval = "confidence")
     ) %>%
     as_tibble()
   
+
   names(model_data) <- c(
     "n_week",
     "bodymass_pred", "bodymass_pred_lwr", "bodymass_pred_upr",
-    "fatperc_pred", "fatperc_pred_lwr", "fatperc_pred_upr"
+    "fatperc_pred", "fatperc_pred_lwr", "fatperc_pred_upr",
+    "leanmass_pred", "leanmass_pred_lwr", "leanmass_pred_upr"
   )
   
   ## Adding the prediction to the main data set and renaming the week variable to date
   plot_data <- raw_data_week %>%
     full_join(model_data, by = "n_week") %>%
     select(
-      n_week, body_mass, bodymass_pred, bodymass_pred_lwr, bodymass_pred_upr,
-      fat_perc, fatperc_pred, fatperc_pred_lwr, fatperc_pred_upr, kcal,
-      lean_perc, prot_g, fat_mass, lean_mass
+      n_week, 
+      body_mass, bodymass_pred, bodymass_pred_lwr, bodymass_pred_upr,
+      fat_perc, fatperc_pred, fatperc_pred_lwr, fatperc_pred_upr, 
+      lean_mass, leanmass_pred, leanmass_pred_lwr, leanmass_pred_upr,
+      kcal, lean_perc, prot_g, fat_mass
     )
   
-  
-  ## function on this to do 
   # Calculate delta values for body_mass, lean_mass, and fat_mass based on lagged values
   table_data <- raw_data_week %>%
     mutate(delta_body_mass = body_mass - lag(body_mass, default = first(body_mass)),
@@ -138,7 +160,8 @@ data_tidy <- function(
       table_data = table_data, 
       plot_data = plot_data,
       model_fatperc = model_fatperc,
-      model_bodymass = model_bodymass
+      model_bodymass = model_bodymass,
+      model_leanmass = model_leanmass
     )
   )
 }
