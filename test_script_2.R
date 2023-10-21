@@ -21,7 +21,7 @@ table_to_plot <- function(
     model_var = model_var,
     color = color ){
   
-  # tf_var <-  lim_lwr + (target_var - model_var$coefficients[[1]]) / ( model_var$coefficients[[2]])*7
+  tf_var <-  lim_lwr + (target_var - model_var$coefficients[[1]]) / ( model_var$coefficients[[2]])*7
   
   plot_base <-  data_plot %>%
     mutate(Date = lim_lwr + weeks(n_week)) %>%                                          
@@ -34,7 +34,7 @@ table_to_plot <- function(
     geom_line(aes(y = !!sym(var_pred_upr)), linewidth = 0.1) +   
     geom_line(aes(y = !!sym(var_pred_lwr)), linewidth = 0.1) +
     geom_hline(yintercept = target_var, linetype = 2, col = "grey") +         
-    # geom_point(aes(tf_var, target_var), shape = 3, color = "red") +            
+    geom_point(aes(tf_var, target_var), shape = 3, color = "red") +
     # Plotting the values above the predictions
     geom_point(aes(y = !!sym(var)), na.rm = T, col = color, size = 0.75) +                            
     geom_line(aes(y = !!sym(var)), na.rm = T, col = color) +                                          

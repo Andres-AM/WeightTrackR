@@ -197,16 +197,11 @@ server <- function(input, output) {
         fat_perc  = round(fat_perc ,input$round_value),
       ) %>%
       dplyr::arrange(desc(date))
-    
-    results <- list(fun_output = fun_output, 
-                    raw_data = raw_data, 
-                    plot_data = fun_output$plot_data, 
-                    table_data = table_data, 
-                    lim_lwr = lim_lwr, 
-                    lim_upr = lim_upr)
+
+    results <- list(fun_output = fun_output, raw_data = raw_data, table_data = table_data, lim_lwr = lim_lwr, lim_upr = lim_upr)
     
   })
-
+  
   output$raw_data <- DT::renderDataTable(
     
     output_tidy()$raw_data  %>%
@@ -279,7 +274,8 @@ server <- function(input, output) {
     tf_fp <- output_tidy()$lim_lwr + (input$target_fp - output_tidy()$fun_output$model_fatperc$coefficients[[1]]) / (output_tidy()$fun_output$model_fatperc$coefficients[[2]])*7
     tf_bm <- output_tidy()$lim_lwr + (input$target_bm - output_tidy()$fun_output$model_bodymass$coefficients[[1]]) / (output_tidy()$fun_output$model_bodymass$coefficients[[2]])*7
     
-
+    # browser()
+    
     ## Plot base to add each variable, and avoid code redundancy 
     plot_base <-  output_tidy()$fun_output$plot_data %>%
       mutate(Date = output_tidy()$lim_lwr + weeks(n_week)) %>%                                          # Standardizing the dates, to start at output_tidy()$lim_lwr + weeks converted to days
@@ -287,20 +283,18 @@ server <- function(input, output) {
       scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +                                   # Format x-axis labels as abbreviated month and year, with breaks at every month
       theme(axis.text.x = element_text(angle = 0)) 
     
-    
-    # browser()
-    plot_FP  <- table_to_plot(
-      data_plot = output_tidy()$plot_data,
-      lim_lwr = output_tidy()$lim_lwr,
-      var = "fat_perc",
-      var_pred = "fatperc_pred", 
-      var_pred_upr = "fatperc_pred_upr", 
-      var_pred_lwr = "fatperc_pred_lwr", 
-      target_var = input$target_fp, 
-      model_var = output_tidy()$fun_output$model_fatperc,
-      color = "red"
-    ) + labs(y = "Fat percentage (%)", x = "Date",title  = paste0("Target: ",input$target_fp,"% the ",format(tf_fp, "%B %d, %Y")))
-    
+    plot_FP <- plot_base +      
+      # Predictions and CI
+      geom_line(aes(y = fatperc_pred), na.rm = T, col = "grey", linetype = 3) +         
+      geom_hline(yintercept = input$target_fp, linetype = 2, col = "grey") +         
+      geom_point(aes(tf_fp, input$target_fp), shape = 3, color = "red") +            
+      geom_line(aes(y = fatperc_pred_upr), linewidth = 0.1) +   
+      geom_line(aes(y = fatperc_pred_lwr), linewidth = 0.1) +  
+      # Plotting the values above the predictions
+      geom_point(aes(y = fat_perc), na.rm = T, col = "red", size = 0.75) +                             # Add red points with 'fat_perc' on y-axis
+      geom_line(aes(y = fat_perc), na.rm = T, col = "red") +                                           # Connect points with red lines
+      scale_y_continuous(n.breaks = 10) +                                                              # Set y-axis limits and breaks
+      labs(y = "Fat percentage (%)", x = "Date",title  = paste0("Target: ",input$target_fp,"% the ",format(tf_fp, "%B %d, %Y")))  # Set y-axis and x-axis labels
     
     plot_BM <- plot_base +  
       # Predictions and CI
