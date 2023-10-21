@@ -9,7 +9,6 @@ date_to_n_week <- function(date = date,lim_lwr = lim_lwr ){
   
 }
 
-
 table_add_delta <- function(data = data, lim_lwr = lim_lwr){
   
   data <- data %>% 
@@ -32,6 +31,7 @@ n_week_to_date <- function(n_week = n_week,lim_lwr = lim_lwr ){
 }
 
 
+## Function to plot data into graph, with predictions 
 table_to_plot <- function(
     data_plot = data_plot,
     lim_lwr = lim_lwr,
@@ -69,6 +69,7 @@ table_to_plot <- function(
   
 }
 
+## Imports data, and returns tables for data exploration 
 data_tidy <- function(
     lim_lwr = "2022-08-01",
     lim_upr = "2023-12-01",
@@ -98,7 +99,6 @@ data_tidy <- function(
   raw_data <- reduce(list(dr_1, dr_2, dr_3), full_join, by = "Date") %>%
     mutate(Date = date(Date),lim_lwr = lim_lwr,  n_day = as.double(Date) - as.double(lim_lwr)) %>%
     reduce(.x = list(., dr_4, dr_7), .f = full_join, by = "Date") %>%
-    # Renaming variables for better clarity
     # Data cleaning and data manipulation
     mutate(
       body_mass = `Body mass(kg)`,
@@ -187,7 +187,7 @@ data_tidy <- function(
            delta_lean_mass = lean_mass - lag(lean_mass, default = first(lean_mass)),
            delta_fat_mass = fat_mass - lag(fat_mass, default = first(fat_mass)),
            date = lim_lwr + weeks(n_week)
-    )   %>%
+    ) %>%
     # Select specific columns and arrange them in descending order of date
     select(date, body_mass, lean_mass, fat_mass, fat_perc, delta_body_mass, delta_lean_mass, delta_fat_mass) %>% 
     arrange(desc(date))

@@ -123,7 +123,8 @@ ui <- fluidPage(theme = shinytheme("flatly"),
 
                   ),
                   tabPanel('Options',
-                           titlePanel("Parameters"),
+                           
+                           hr(), 
                            
                            dateRangeInput(inputId = "date_lim",
                                           label = "Date range for plots",
