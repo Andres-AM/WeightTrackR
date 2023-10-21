@@ -48,19 +48,19 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                                          This totals for 3kg/month of body mass"),
                                ),
                                
+                               hr(),
+                               
+                               h3("Prediction"),
+                               
+                               dateRangeInput(inputId = "date_phase",
+                                              label = "Date interval for prediction:",
+                                              min = "2022-08-01",
+                                              start = "2023-08-01",
+                                              end = "2023-10-16"
+                               ),
+                               
+                               
                                conditionalPanel(condition = "input.plot_choice == 'Fat Percentage (%)'",
-                                                
-                                                hr(),
-                                                
-                                                h3("Prediction"),
-                                                
-                                                dateRangeInput(inputId = "date_phase",
-                                                               label = "Date interval for prediction:",
-                                                               min = "2022-08-01",
-                                                               start = "2023-08-01",
-                                                               end = "2023-09-30"
-                                                ),
-                                                
                                                 
                                                 sliderInput(inputId = "target_fp",
                                                             label = "Target Fat Percentage (%)",
@@ -75,22 +75,23 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                
                                conditionalPanel(condition = "input.plot_choice == 'Body Mass (kg)'",
                                                 
-                                                hr(),
-                                                
-                                                h3("Prediction"),
-                                                
-                                                dateRangeInput(inputId = "date_phase",
-                                                               label = "Date interval for prediction:",
-                                                               min = "2022-08-01",
-                                                               start = "2023-08-01",
-                                                               end = "2023-09-30"
-                                                ),
-                                                
                                                 sliderInput("target_bm",
                                                             label = "Target Body Mass (kg)",
                                                             min = 65,
                                                             max = 78,
                                                             value = 76
+                                                ),
+                                                
+                                                helpText("Note: test"),
+                               ),
+                               
+                               conditionalPanel(condition = "input.plot_choice == 'Lean Mass (kg)'",
+                
+                                                sliderInput("target_lm",
+                                                            label = "Target Lean Mass (kg)",
+                                                            min = 60,
+                                                            max = 64,
+                                                            value = 62,step = 0.2
                                                 ),
                                                 
                                                 helpText("Note: test"),
@@ -276,19 +277,6 @@ server <- function(input, output) {
   
   your_plot <- reactive({
     
-    tf_fp <- output_tidy()$lim_lwr + (input$target_fp - output_tidy()$fun_output$model_fatperc$coefficients[[1]]) / (output_tidy()$fun_output$model_fatperc$coefficients[[2]])*7
-    tf_bm <- output_tidy()$lim_lwr + (input$target_bm - output_tidy()$fun_output$model_bodymass$coefficients[[1]]) / (output_tidy()$fun_output$model_bodymass$coefficients[[2]])*7
-    
-
-    ## Plot base to add each variable, and avoid code redundancy 
-    plot_base <-  output_tidy()$fun_output$plot_data %>%
-      mutate(Date = output_tidy()$lim_lwr + weeks(n_week)) %>%                                          # Standardizing the dates, to start at output_tidy()$lim_lwr + weeks converted to days
-      ggplot(aes(x = Date)) +
-      scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +                                   # Format x-axis labels as abbreviated month and year, with breaks at every month
-      theme(axis.text.x = element_text(angle = 0)) 
-    
-    
-    # browser()
     plot_FP  <- table_to_plot(
       data_plot = output_tidy()$plot_data,
       lim_lwr = output_tidy()$lim_lwr,
@@ -298,31 +286,39 @@ server <- function(input, output) {
       var_pred_lwr = "fatperc_pred_lwr", 
       target_var = input$target_fp, 
       model_var = output_tidy()$fun_output$model_fatperc,
-      color = "red"
-    ) + labs(y = "Fat percentage (%)", x = "Date",title  = paste0("Target: ",input$target_fp,"% the ",format(tf_fp, "%B %d, %Y")))
+      color = "red", 
+      y_axis_name = "Fat percentage (%)",
+      unit_var = "%"
+    ) 
     
+    plot_BM  <- table_to_plot(
+      data_plot = output_tidy()$plot_data,
+      lim_lwr = output_tidy()$lim_lwr,
+      var = "body_mass",
+      var_pred = "bodymass_pred", 
+      var_pred_upr = "bodymass_pred_upr", 
+      var_pred_lwr = "bodymass_pred_lwr", 
+      target_var = input$target_bm, 
+      model_var = output_tidy()$fun_output$model_bodymass,
+      color = "blue",
+      y_axis_name = "Body Mass (kg)",
+      unit_var = "kg"
+      ) 
     
-    plot_BM <- plot_base +  
-      # Predictions and CI
-      geom_line(aes(y = bodymass_pred), col = "grey",na.rm = T, linetype = 3) +
-      geom_hline(yintercept = input$target_bm, linetype = 2, col = "grey") +
-      geom_point(aes(tf_bm,input$target_bm), shape = 3, color = "red") +
-      geom_line(aes(y = bodymass_pred_upr),linewidth = 0.1) +
-      geom_line(aes(y = bodymass_pred_lwr),linewidth = 0.1) +
-      # Plotting the values above the predictions
-      geom_point(aes(y = body_mass),na.rm = T, col = "blue", size= 0.75) +
-      geom_line(aes(y = body_mass),na.rm = T, col = "blue") +
-      scale_y_continuous(n.breaks = 10) +
-      labs( y = "Body Mass (kg)", x = "Date",title  = paste0("Target: ",input$target_bm,"kg the ",format(tf_bm, "%B %d, %Y")))
-    
-    
-    plot_LM <-   plot_base + 
-      geom_point(aes(y = lean_mass),na.rm = T, col = "grey", size= 0.75) +
-      geom_line(aes(y = lean_mass),na.rm = T, col = "grey") +
-      scale_y_continuous(n.breaks = 10) +
-      theme(axis.text.x = element_text(angle = 45)) +
-      labs( y = "Lean Body Mass (kg)",  x = "Date")
-    
+    plot_LM  <- table_to_plot(
+      data_plot = output_tidy()$plot_data,
+      lim_lwr = output_tidy()$lim_lwr,
+      var = "lean_mass",
+      var_pred = "leanmass_pred", 
+      var_pred_upr = "leanmass_pred_upr", 
+      var_pred_lwr = "leanmass_pred_lwr", 
+      target_var = input$target_lm, 
+      model_var = output_tidy()$fun_output$model_leanmass,
+      color = "grey", 
+      y_axis_name = "Lean Mass (kg)",
+      unit_var = "kg"
+      ) 
+
     return(
       if (input$plot_choice == "Fat Percentage (%)") { plot_FP } 
       else if(input$plot_choice == "Body Mass (kg)") { plot_BM } 

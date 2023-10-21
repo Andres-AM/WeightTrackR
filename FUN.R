@@ -41,7 +41,9 @@ table_to_plot <- function(
     var_pred_lwr = var_pred_lwr,
     target_var = target_var,
     model_var = model_var,
-    color = color ){
+    color = color,
+    y_axis_name = "y axis name",
+    unit_var = "%"){
   
   tf_var <-  lim_lwr + (target_var - model_var$coefficients[[1]]) / ( model_var$coefficients[[2]])*7
   
@@ -60,7 +62,8 @@ table_to_plot <- function(
     # Plotting the values above the predictions
     geom_point(aes(y = !!sym(var)), na.rm = T, col = color, size = 0.75) +                            
     geom_line(aes(y = !!sym(var)), na.rm = T, col = color) +                                          
-    scale_y_continuous(n.breaks = 10)
+    scale_y_continuous(n.breaks = 10) + 
+    labs(y = y_axis_name, x = "Date",title  = paste0("Target: ",target_var,unit_var," the ",format(tf_var, "%B %d, %Y")))
   
   return(p)
   
