@@ -14,7 +14,8 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                h3("Input Parameters"),
                                
                                selectInput( inputId = "phase_type",
-                                            label = "Phase Type",selected = "Cutting",
+                                            label = "Phase Type",
+                                            selected = "Bulking",
                                             choices = c("Bulking",
                                                         "Cutting" 
                                             )
@@ -91,7 +92,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                                             label = "Target Lean Mass (kg)",
                                                             min = 60,
                                                             max = 64,
-                                                            value = 62,step = 0.2
+                                                            value = 62,step = 0.5
                                                 ),
                                                 
                                                 helpText("Note: test"),
@@ -119,11 +120,10 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                   ),
                   tabPanel('Raw Data',
 
-                           dataTableOutput(outputId = "raw_data", width = "100%", height = "auto", fill = TRUE),
+                           dataTableOutput(outputId = "raw_data_day", width = "100%", height = "auto", fill = TRUE),
 
                   ),
                   tabPanel('Options',
-                           
                            hr(), 
                            
                            dateRangeInput(inputId = "date_lim",
@@ -174,25 +174,26 @@ server <- function(input, output) {
       target_bm    = input$target_bm)
     
     # Recap table as the main table output 
-    table_data <- fun_output$table_data %>% 
+    table_data <- fun_output$data_week %>% 
+      filter( filtering_pred == F) %>% 
+      arrange(desc(date)) %>% 
       mutate( 
         date =  format(date, "%B %d, %Y"), 
         fat_perc = paste0("<b>",round(fat_perc,input$round_value)," <b>"," %"),
         BM = as.character(paste0("(",if_else(delta_body_mass > 0,"+",""), round(delta_body_mass,input$round_value),")"," <b>",round(body_mass,input$round_value),"<b>")),
         LM = as.character(paste0("(",if_else(delta_lean_mass > 0,"+",""),round(delta_lean_mass,input$round_value),")"," <b>",round(lean_mass,input$round_value),"<b>")),
         FM = as.character(paste0("(",if_else(delta_fat_mass > 0,"+",""), round(delta_fat_mass,input$round_value),")"," <b>",round(fat_mass,input$round_value),"<b>")),
-        
         ## Scores and ratios
         score_bulk = paste0("target: ",round((delta_lean_mass + delta_fat_mass + delta_body_mass)/2/input$bulk_val*100, input$round_value)," %",
                             " ratio: ", round(delta_lean_mass/((delta_lean_mass + delta_fat_mass + delta_body_mass)/2)*100, input$round_value), " %"),
         score_cut = paste0("target: ",round((delta_lean_mass + delta_fat_mass + delta_body_mass)/2/(-input$cut_val)*100, input$round_value)," %",
                            " ratio: ", round(delta_fat_mass/((delta_lean_mass + delta_fat_mass + delta_body_mass)/2)*100, input$round_value), " %")
-      )
+      ) %>% 
+      select(date, fat_perc, BM, LM, FM,score_bulk, score_cut)
     
-    raw_data <- fun_output$raw_data %>%
+    raw_data_day <- fun_output$raw_data_day %>%
       ungroup() %>%
       mutate(
-        date = Date,
         body_mass = round(body_mass,input$round_value),
         fat_mass  = round(fat_mass ,input$round_value),
         lean_mass = round(lean_mass,input$round_value),
@@ -201,17 +202,17 @@ server <- function(input, output) {
       dplyr::arrange(desc(date))
     
     results <- list(fun_output = fun_output, 
-                    raw_data = raw_data, 
-                    plot_data = fun_output$plot_data, 
+                    raw_data_day = raw_data_day, 
+                    data_week = fun_output$data_week, 
                     table_data = table_data, 
                     lim_lwr = lim_lwr, 
                     lim_upr = lim_upr)
     
   })
 
-  output$raw_data <- DT::renderDataTable(
+  output$raw_data_day <- DT::renderDataTable(
     
-    output_tidy()$raw_data  %>%
+    output_tidy()$raw_data_day  %>%
       select(date, fat_perc,body_mass,lean_mass,fat_mass) %>%
       datatable(
         colnames = c('Date (days)',
@@ -275,55 +276,31 @@ server <- function(input, output) {
     } 
   )
   
-  
   your_plot <- reactive({
     
-    plot_FP  <- table_to_plot(
-      data_plot = output_tidy()$plot_data,
-      lim_lwr = output_tidy()$lim_lwr,
-      var = "fat_perc",
-      var_pred = "fatperc_pred", 
-      var_pred_upr = "fatperc_pred_upr", 
-      var_pred_lwr = "fatperc_pred_lwr", 
-      target_var = input$target_fp, 
-      model_var = output_tidy()$fun_output$model_fatperc,
-      color = "red", 
-      y_axis_name = "Fat percentage (%)",
-      unit_var = "%"
-    ) 
-    
-    plot_BM  <- table_to_plot(
-      data_plot = output_tidy()$plot_data,
-      lim_lwr = output_tidy()$lim_lwr,
-      var = "body_mass",
-      var_pred = "bodymass_pred", 
-      var_pred_upr = "bodymass_pred_upr", 
-      var_pred_lwr = "bodymass_pred_lwr", 
-      target_var = input$target_bm, 
-      model_var = output_tidy()$fun_output$model_bodymass,
-      color = "blue",
-      y_axis_name = "Body Mass (kg)",
-      unit_var = "kg"
-      ) 
-    
-    plot_LM  <- table_to_plot(
-      data_plot = output_tidy()$plot_data,
-      lim_lwr = output_tidy()$lim_lwr,
-      var = "lean_mass",
-      var_pred = "leanmass_pred", 
-      var_pred_upr = "leanmass_pred_upr", 
-      var_pred_lwr = "leanmass_pred_lwr", 
-      target_var = input$target_lm, 
-      model_var = output_tidy()$fun_output$model_leanmass,
-      color = "grey", 
-      y_axis_name = "Lean Mass (kg)",
-      unit_var = "kg"
-      ) 
+    arguments <-list( data_plot = output_tidy()$data_week,
+                      lim_lwr = output_tidy()$lim_lwr)
+
+    list_plots <- mapply(FUN = table_to_plot, 
+                         var = c("fat_perc","body_mass","lean_mass" ),
+                         var_pred = c("fatperc_pred", "bodymass_pred", "leanmass_pred"),
+                         var_pred_upr = c("fatperc_pred_upr", "bodymass_pred_upr","leanmass_pred_upr"),
+                         var_pred_lwr = c("fatperc_pred_lwr", "bodymass_pred_lwr","leanmass_pred_lwr"),
+                         target_var = c(input$target_fp, input$target_bm,input$target_lm),  
+                         model_var = list(output_tidy()$fun_output$model_fatperc,
+                                       output_tidy()$fun_output$model_bodymass,
+                                       output_tidy()$fun_output$model_leanmass),
+                         color =c("red","blue","grey"),
+                         y_axis_name = c("Fat percentage (%)","Body Mass (kg)","Lean Mass (kg)"),
+                         unit_var = c("%","kg","kg"),
+                         MoreArgs = arguments, 
+                         SIMPLIFY = F
+                         )
 
     return(
-      if (input$plot_choice == "Fat Percentage (%)") { plot_FP } 
-      else if(input$plot_choice == "Body Mass (kg)") { plot_BM } 
-      else if(input$plot_choice == "Lean Mass (kg)") { plot_LM }
+      if (input$plot_choice == "Fat Percentage (%)") { list_plots[[1]] } 
+      else if(input$plot_choice == "Body Mass (kg)") { list_plots[[2]] } 
+      else if(input$plot_choice == "Lean Mass (kg)") { list_plots[[3]] }
     )
     
   })
