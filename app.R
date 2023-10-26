@@ -15,7 +15,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                
                                selectInput( inputId = "phase_type",
                                             label = "Phase Type",
-                                            selected = "Bulking",
+                                            selected = "Cutting",
                                             choices = c("Bulking",
                                                         "Cutting" 
                                             )
