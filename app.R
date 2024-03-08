@@ -129,7 +129,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                            dateRangeInput(inputId = "date_lim",
                                           label = "Date range for plots",
                                           min   = "2022-08-01",
-                                          start = "2022-08-01",
+                                          start = "2023-08-01",
                                           end   = "2023-11-01"
                            ),
                            
