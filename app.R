@@ -7,7 +7,7 @@ source("FUN.R")
 ui <- fluidPage(theme = shinytheme("flatly"),
                 tabsetPanel(
                   tabPanel('Overview',
-                           titlePanel("Health Dashboard V2"),
+                           titlePanel("Health Dashboard"),
                            sidebarLayout(
                              sidebarPanel(
                                
@@ -112,7 +112,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                  
                                  hr(), 
                                  
-                                 dataTableOutput(outputId = "your_table", width = "100%", height = "auto", fill = TRUE),
+                                 DT::dataTableOutput(outputId = "your_table", width = "100%", height = "auto", fill = TRUE),
                                  
                                ),
                              )
@@ -120,7 +120,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                   ),
                   tabPanel('Raw Data',
 
-                           dataTableOutput(outputId = "raw_data_day", width = "100%", height = "auto", fill = TRUE),
+                           DT::dataTableOutput(outputId = "raw_data_day", width = "100%", height = "auto", fill = TRUE),
 
                   ),
                   tabPanel('Options',
