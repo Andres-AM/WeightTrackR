@@ -7,7 +7,7 @@ source("FUN.R")
 ui <- fluidPage(theme = shinytheme("flatly"),
                 tabsetPanel(
                   tabPanel('Overview',
-                           titlePanel("Health Dashboard"),
+                           titlePanel("Health Dashboard V2"),
                            sidebarLayout(
                              sidebarPanel(
                                
