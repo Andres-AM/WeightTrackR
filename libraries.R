@@ -2,6 +2,9 @@
 ## All packages 
 library(tidyverse)
 library(lubridate) 
+library(polite)
+library(rvest)
+library(pbmcapply)
 library(modelr) 
 library(kableExtra)
 library(plotly)
@@ -16,6 +19,7 @@ library(DT)
 library(formattable)
 library(shinyjs)
 library(shinythemes)
+library(rsconnect)
 
 
 ## Other settings 
