@@ -9,4 +9,21 @@ Link for an interactive version https://andres-am.shinyapps.io/health-dashboard/
 
 ![Alt text](preview.jpg)
 
+
+## Dependencies
+
+This project relies on the following R packages:
+
+- dplyr: for data manipulation
+- purr: for automating processes
+- shiny: to create easily an app to visualize data 
+- lubridate: handling dates 
+- plotly: creating interactives visual graphs
+- rsconnect: deploying the shiny app on shinyapps.io
+
+## How to run this app 
+
+You can either run this app from shinyapps.io server by clicking this link [health-dashboard](https://andres-am.shinyapps.io/health-dashboard/) or you can download the project and run the app.R file.
+
+
  
