@@ -1,5 +1,6 @@
 # Dashboard for tracking health key values
-## Description
+
+## health-dashboard Description
 An compact health monitoring panel for observing health metrics over a period of time. 
 The weight, specifically focused on achieving weight loss goals, is the primary health metric in this scenario. This dashboard facilitates comprehension of the patterns in crucial health values through visual graphs and tables.
 
@@ -18,7 +19,7 @@ This project relies on the following R packages:
 - purr: for automating processes
 - shiny: to create easily an app to visualize data 
 - lubridate: handling dates 
-- plotly: creating interactives visual graphs
+- plotly: creating interactive visual graphs
 - rsconnect: deploying the shiny app on shinyapps.io
 
 ## How to run this app 
