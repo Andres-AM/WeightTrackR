@@ -60,7 +60,6 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                               end = "2023-10-16"
                                ),
                                
-                               
                                conditionalPanel(condition = "input.plot_choice == 'Fat Percentage (%)'",
                                                 
                                                 sliderInput(inputId = "target_fp",
