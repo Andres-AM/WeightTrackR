@@ -129,7 +129,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                                           label = "Date range for plots",
                                           min   = "2022-08-01",
                                           start = "2023-08-01",
-                                          end   = "2023-11-01"
+                                          end   = "2023-09-01"
                            ),
                            
                            numericInput(inputId = "round_value",
@@ -139,7 +139,7 @@ ui <- fluidPage(theme = shinytheme("flatly"),
                            ),
                            textInput(inputId = "phase_date",
                                      label ="phase_date",
-                                     value = "2022-08-01;2023-08-01;2023-10-16"),
+                                     value = "2022-08-01;2023-08-01;2023-10-16w"),
                            
                            verbatimTextOutput(outputId = "dates")
                   )

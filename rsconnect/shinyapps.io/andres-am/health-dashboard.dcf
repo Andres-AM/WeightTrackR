@@ -5,7 +5,7 @@ account: andres-am
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 11671613
-bundleId: 8455867
+bundleId: 8476361
 url: https://andres-am.shinyapps.io/health-dashboard/
 version: 1
 asMultiple: FALSE

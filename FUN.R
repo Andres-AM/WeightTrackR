@@ -50,7 +50,7 @@ table_to_plot <- function(
     mutate(Date = lim_lwr + weeks(n_week)) %>%
   ggplot(aes(x = Date)) +
   # Format x-axis labels as abbreviated month and year, with breaks at every month
-  scale_x_date(date_labels = "%b %y", date_breaks = "1 month") +
+  scale_x_date(date_labels = "%b %y", date_breaks = "2 month") +
   theme(axis.text.x = element_text(angle = 0)) +
   # Predictions and CI
   geom_line(aes(y = !!sym(var_pred)), na.rm = T, col = "grey", linetype = 3) +
