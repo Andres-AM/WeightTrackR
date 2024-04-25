@@ -18,6 +18,7 @@ library(reactable)
 library(DT)
 library(formattable)
 library(shinyjs)
+library(shinydashboard)
 library(shinythemes)
 library(rsconnect)
 
