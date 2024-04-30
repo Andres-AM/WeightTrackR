@@ -165,4 +165,12 @@ server <- function(input, output) {
              yaxis = list(autorange = TRUE))
     
   )
+  
+  output$progressBox <- renderValueBox({
+    valueBox(
+      paste0(25, "%"), "Progress", icon = icon("list"),
+      color = "blue"
+    )
+  })
+  
 }

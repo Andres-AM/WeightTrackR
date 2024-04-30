@@ -149,7 +149,9 @@ ui <- dashboardPage(
 
       ),
       
-      box(width = 4, "other informations"),
+      box(width = 4, "other informations",
+          valueBoxOutput("progressBox"),
+      ),
       
       tabBox(width = 12, 
              tabPanel("Table",
