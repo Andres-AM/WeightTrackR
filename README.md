@@ -6,11 +6,6 @@ The weight, specifically focused on achieving weight loss goals, is the primary 
 
 Link for an interactive version https://andres-am.shinyapps.io/health-dashboard/ 
 
-## Preview
-
-![Alt text](preview.jpg)
-
-
 ## Dependencies
 
 This project relies on the following R packages:
