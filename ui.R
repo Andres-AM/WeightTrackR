@@ -111,10 +111,10 @@ ui <- dashboardPage(
                
                
                
-               ),
+      ),
       menuItem("Options", icon = icon("th"), tabName = "widgets",
                
-
+               
                
                numericInput(inputId = "round_value",
                             label = "round value",
@@ -129,7 +129,7 @@ ui <- dashboardPage(
                
                
                
-               ) 
+      ) 
       
     )
     
@@ -138,18 +138,18 @@ ui <- dashboardPage(
   dashboardBody(
     fluidRow(
       box(width = 8,   
-
-                 selectInput( inputId = "plot_choice",
-                              label = "Graph type",
-                              choices = c("Fat Percentage (%)",
-                                          "Body Mass (kg)",
-                                          "Lean Mass (kg)")),
-                 
-                 plotlyOutput(outputId = "SelectedPlot")
-
+          
+          selectInput( inputId = "plot_choice",
+                       label = "Graph type",
+                       choices = c("Fat Percentage (%)",
+                                   "Body Mass (kg)",
+                                   "Lean Mass (kg)")),
+          
+          plotlyOutput(outputId = "SelectedPlot")
+          
       ),
       
-      box(width = 4, "other informations",
+      box(width = 4, "other informations, \n Last data from 01.05.24 ( 1 day ago ).",
           valueBoxOutput("progressBox"),
       ),
       
