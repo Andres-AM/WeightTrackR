@@ -37,12 +37,14 @@ server <- function(input, output) {
         LM = as.character(paste0("(",if_else(delta_lean_mass > 0,"+",""),round(delta_lean_mass,input$round_value),")"," <b>",round(lean_mass,input$round_value),"<b>")),
         FM = as.character(paste0("(",if_else(delta_fat_mass > 0,"+",""), round(delta_fat_mass,input$round_value),")"," <b>",round(fat_mass,input$round_value),"<b>")),
         ## Scores and ratios
-        score_bulk = paste0("target: ",round((delta_lean_mass + delta_fat_mass + delta_body_mass)/2/input$bulk_val*100, input$round_value)," %",
-                            " ratio: ", round(delta_lean_mass/((delta_lean_mass + delta_fat_mass + delta_body_mass)/2)*100, input$round_value), " %"),
-        score_cut = paste0("target: ",round((delta_lean_mass + delta_fat_mass + delta_body_mass)/2/(-input$cut_val)*100, input$round_value)," %",
-                           " ratio: ", round(delta_fat_mass/((delta_lean_mass + delta_fat_mass + delta_body_mass)/2)*100, input$round_value), " %")
+        target_bulk = round((delta_lean_mass + delta_fat_mass + delta_body_mass)/2/input$bulk_val*100, input$round_value),
+        ratio_bulk = round(delta_lean_mass/((delta_lean_mass + delta_fat_mass + delta_body_mass)/2)*100, input$round_value),
+        target_cut = round((delta_lean_mass + delta_fat_mass + delta_body_mass)/2/(-input$cut_val)*100, input$round_value),
+        ratio_cut =  round(delta_fat_mass/((delta_lean_mass + delta_fat_mass + delta_body_mass)/2)*100, input$round_value),
+        score_bulk = paste0("target: ", target_bulk," %", " ratio: ", ratio_bulk, " %"),
+        score_cut = paste0("target: ",target_cut," %", " ratio: ", ratio_cut, " %")
       ) %>% 
-      select(date, fat_perc, BM, LM, FM,score_bulk, score_cut)
+      select(date, fat_perc, BM, LM, FM,score_bulk, score_cut, target_bulk, ratio_bulk, target_cut, ratio_cut )
     
     raw_data_day <- fun_output$raw_data_day %>%
       ungroup() %>%
@@ -129,6 +131,7 @@ server <- function(input, output) {
     } 
   )
   
+  ## 
   your_plot <- reactive({
     
     arguments <-list( data_plot = output_tidy()$data_week,
@@ -158,6 +161,8 @@ server <- function(input, output) {
     
   })
   
+  
+  ## Rendering with Plotly
   output$SelectedPlot <- renderPlotly(
     
     ggplotly(your_plot()) %>%
@@ -166,9 +171,42 @@ server <- function(input, output) {
     
   )
   
-  output$progressBox <- renderValueBox({
+  
+  ## Obtaining KPI and displaying them in Value Boxes 
+  KPI_ValueBox <- reactive({ 
+    
+    if(input$phase_type == "Bulking") { 
+      
+      list(
+      output_tidy()$table_data$target_bulk[[1]],
+      output_tidy()$table_data$ratio_bulk[[1]]
+      )
+
+    } else if(input$phase_type == "Cutting") { 
+      
+      list(
+      output_tidy()$table_data$target_cut[[1]],
+      output_tidy()$table_data$ratio_cut[[1]]
+      )
+      
+    }
+    
+  })
+  
+  output$TargetScoreBox <- renderValueBox({
     valueBox(
-      paste0(25, "%"), "Progress", icon = icon("list"),
+      paste(KPI_ValueBox()[1],"%"),
+      "Target progress",
+      icon = icon("list"),
+      color = "red"
+    )
+  })
+  
+  output$RatioScoreBox <- renderValueBox({
+    valueBox(
+      paste(KPI_ValueBox()[2],"%"),
+      "Ratio progress", 
+      icon = icon("signal"),
       color = "blue"
     )
   })

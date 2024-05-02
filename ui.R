@@ -5,7 +5,6 @@ source("FUN.R")
 ui <- dashboardPage(
   
   dashboardHeader(title = "WeightTrackR" ),
-  
   dashboardSidebar(
     sidebarMenu(
       menuItem("Parameters", tabName = "dashboard", icon = icon("dashboard"), startExpanded = T,
@@ -149,9 +148,11 @@ ui <- dashboardPage(
           
       ),
       
-      box(width = 4, "other informations, \n Last data from 01.05.24 ( 1 day ago ).",
-          valueBoxOutput("progressBox"),
-      ),
+      infoBoxOutput("TargetScoreBox"),
+      
+      infoBoxOutput("RatioScoreBox"),
+      
+      
       
       tabBox(width = 12, 
              tabPanel("Table",
@@ -166,4 +167,5 @@ ui <- dashboardPage(
       )
     )
   )
+  
 )
