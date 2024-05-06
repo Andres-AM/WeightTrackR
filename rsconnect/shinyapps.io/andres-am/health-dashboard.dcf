@@ -1,11 +1,11 @@
 name: health-dashboard
-title:
+title: health-dashboard
 username: andres-am
 account: andres-am
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 11671613
-bundleId: 8560429
+bundleId: 8581565
 url: https://andres-am.shinyapps.io/health-dashboard/
 version: 1
 asMultiple: FALSE
