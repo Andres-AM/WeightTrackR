@@ -1,0 +1,12 @@
+name: WeightTrackR
+title: WeightTrackR
+username: andres-am
+account: andres-am
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 11942792
+bundleId: 8581598
+url: https://andres-am.shinyapps.io/WeightTrackR/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

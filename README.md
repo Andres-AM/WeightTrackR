@@ -1,7 +1,7 @@
 # Dashboard for tracking weight changes 
 
 ## Description
-An compact health monitoring panel for observing health metrics over a period of time. 
+An compact weight monitoring panel for observing health metrics over a period of time. 
 The weight, specifically focused on achieving weight loss goals, is the primary health metric in this scenario. This dashboard facilitates comprehension of the patterns in crucial health values through visual graphs and tables.
 
 Link for an interactive version https://andres-am.shinyapps.io/health-dashboard/ 

@@ -1,26 +1,10 @@
 
 ## All packages 
 library(tidyverse)
-library(lubridate) 
-library(polite)
-library(rvest)
-library(pbmcapply)
-library(modelr) 
-library(kableExtra)
+library(modelr)
 library(plotly)
-library(splines)
-library(knitr) 
-library(plotly)
-library(ggrepel)
-library(paletteer)
-library(flexdashboard)
-library(reactable)
 library(DT)
-library(formattable)
-library(shinyjs)
 library(shinydashboard)
-library(shinythemes)
-library(rsconnect)
 
 
 ## Other settings 
