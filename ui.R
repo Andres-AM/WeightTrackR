@@ -9,14 +9,11 @@ ui <- dashboardPage(
     sidebarMenu(
       menuItem("Parameters", tabName = "dashboard", icon = icon("dashboard"), startExpanded = T,
                
-               
-               
-               
                dateRangeInput(inputId = "date_lim",
                               label = "Date range for plots",
                               min   = "2022-08-01",
                               start = "2023-08-01",
-                              end   = "2023-09-01"
+                              end   = "2024-09-01"
                ),
                
                hr(), 
@@ -67,8 +64,8 @@ ui <- dashboardPage(
                dateRangeInput(inputId = "date_phase",
                               label = "Date interval for prediction:",
                               min = "2022-08-01",
-                              start = "2023-08-01",
-                              end = "2023-10-16"
+                              start = "2024-04-01",
+                              end = "2024-05-01"
                ),
                
                conditionalPanel(condition = "input.plot_choice == 'Fat Percentage (%)'",
@@ -77,7 +74,7 @@ ui <- dashboardPage(
                                             label = "Target Fat Percentage (%)",
                                             min = 12,
                                             max = 20, 
-                                            value = 19,
+                                            value = 14,
                                             step = 0.5
                                 ),
                                 

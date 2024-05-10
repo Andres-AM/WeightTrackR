@@ -48,22 +48,22 @@ table_to_plot <- function(
   tf_var <-  lim_lwr + (target_var - model_var$coefficients[[1]]) / ( model_var$coefficients[[2]])*7
   p <- data_plot %>%
     mutate(Date = lim_lwr + weeks(n_week)) %>%
-  ggplot(aes(x = Date)) +
-  # Format x-axis labels as abbreviated month and year, with breaks at every month
-  scale_x_date(date_labels = "%b %y", date_breaks = "2 month") +
-  theme(axis.text.x = element_text(angle = 0)) +
-  # Predictions and CI
-  geom_line(aes(y = !!sym(var_pred)), na.rm = T, col = "grey", linetype = 3) +
-  geom_line(aes(y = !!sym(var_pred_upr)), linewidth = 0.1) +
-  geom_line(aes(y = !!sym(var_pred_lwr)), linewidth = 0.1) +
-  geom_hline(yintercept = target_var, linetype = 2, col = "grey") +
-  # geom_point(aes(x = tf_var,y =  target_var), shape = 4, color = "red") +
-  # Plotting the values above the predictions
-  geom_point(aes(y = !!sym(var)), na.rm = T, col = color, size = 0.75) +
-  geom_line(aes(y = !!sym(var)), na.rm = T, col = color) +
-  scale_y_continuous(n.breaks = 10) +
-  labs(y = y_axis_name, x = "Date",title  = paste0("Target: ",target_var,unit_var," the ",format(tf_var, "%B %d, %Y")))
-
+    ggplot(aes(x = Date)) +
+    # Format x-axis labels as abbreviated month and year, with breaks at every month
+    scale_x_date(date_labels = "%b %y", date_breaks = "2 month") +
+    theme(axis.text.x = element_text(angle = 0)) +
+    # Predictions and CI
+    geom_line(aes(y = !!sym(var_pred)), na.rm = T, col = "grey", linetype = 3) +
+    geom_line(aes(y = !!sym(var_pred_upr)), linewidth = 0.1) +
+    geom_line(aes(y = !!sym(var_pred_lwr)), linewidth = 0.1) +
+    geom_hline(yintercept = target_var, linetype = 2, col = "grey") +
+    annotate(geom = "point",x = tf_var,y =  target_var, shape = 4, color = "red") +
+    # Plotting the values above the predictions
+    geom_point(aes(y = !!sym(var)), na.rm = T, col = color, size = 0.75) +
+    geom_line(aes(y = !!sym(var)), na.rm = T, col = color) +
+    scale_y_continuous(n.breaks = 10) +
+    labs(y = y_axis_name, x = "Date",title  = paste0("Target: ",target_var,unit_var," the ",format(tf_var, "%B %d, %Y")))
+  
   return(p)
   
 }
@@ -76,7 +76,7 @@ data_tidy <- function(
     lim_upr_mod = "2023-09-30",
     target_fp = 15,
     target_bm = 69
-    ){
+){
   
   ## Range for data filtering 
   lim_lwr <- date(lim_lwr)
@@ -93,7 +93,7 @@ data_tidy <- function(
   dr_3 <- read_delim("Data/lean.txt", delim = ",", show_col_types = F)
   dr_4 <- read_delim("Data/calories.txt", delim = ",", show_col_types = F)  %>%  mutate( Date = date(Date)) 
   dr_7 <- read_delim("Data/prot.txt", delim = ",", show_col_types = F) %>%  mutate( Date = date(Date)) 
-
+  
   ## Data import, merging and setting the start date to zero
   raw_data_day <- reduce(list(dr_1, dr_2, dr_3), full_join, by = "Date") %>%
     mutate(Date = date(Date),lim_lwr = lim_lwr,  n_day = as.double(Date) - as.double(lim_lwr)) %>%
@@ -163,7 +163,7 @@ data_tidy <- function(
     ) %>%
     as_tibble()
   
-
+  
   names(model_data) <- c(
     "n_week",
     "bodymass_pred", "bodymass_pred_lwr", "bodymass_pred_upr",
