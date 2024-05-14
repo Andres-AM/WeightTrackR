@@ -65,7 +65,7 @@ ui <- dashboardPage(
                               label = "Date interval for prediction:",
                               min = "2022-08-01",
                               start = "2024-04-01",
-                              end = "2024-05-01"
+                              end = lubridate::today()
                ),
                
                conditionalPanel(condition = "input.plot_choice == 'Fat Percentage (%)'",
