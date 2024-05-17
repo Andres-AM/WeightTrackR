@@ -31,7 +31,7 @@ ui <- dashboardPage(
                                 
                                 numericInput(inputId = "bulk_val",
                                              label = "Bulking target, BM in kg/week",
-                                             value = "0.5",
+                                             value = "0.4",
                                              step = 0.1,
                                              min = 0,
                                 ),
@@ -49,7 +49,7 @@ ui <- dashboardPage(
                                 
                                 numericInput(inputId = "cut_val",
                                              label = "Cutting target, BM in kg/week",
-                                             value = "0.7",
+                                             value = "0.6",
                                              step = 0.1,
                                              min = 0,
                                 ),
