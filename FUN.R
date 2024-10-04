@@ -52,12 +52,14 @@ table_to_plot <- function(
     # Format x-axis labels as abbreviated month and year, with breaks at every month
     scale_x_date(date_labels = "%b %y", date_breaks = "2 month") +
     theme(axis.text.x = element_text(angle = 0)) +
-    # Predictions and CI
-    geom_line(aes(y = !!sym(var_pred)), na.rm = T, col = "grey", linetype = 3) +
-    geom_line(aes(y = !!sym(var_pred_upr)), linewidth = 0.1) +
-    geom_line(aes(y = !!sym(var_pred_lwr)), linewidth = 0.1) +
-    geom_hline(yintercept = target_var, linetype = 2, col = "grey") +
-    annotate(geom = "point",x = tf_var,y =  target_var, shape = 4, color = "red") +
+    
+    # Predictions and CI ( not optimal )
+    # geom_line(aes(y = !!sym(var_pred)), na.rm = T, col = "grey", linetype = 3) +
+    # geom_line(aes(y = !!sym(var_pred_upr)), linewidth = 0.1) +
+    # geom_line(aes(y = !!sym(var_pred_lwr)), linewidth = 0.1) +
+    # geom_hline(yintercept = target_var, linetype = 2, col = "grey") +
+    # annotate(geom = "point",x = tf_var,y =  target_var, shape = 4, color = "red") +
+    
     # Plotting the values above the predictions
     geom_point(aes(y = !!sym(var)), na.rm = T, col = color, size = 0.75) +
     geom_line(aes(y = !!sym(var)), na.rm = T, col = color) +
