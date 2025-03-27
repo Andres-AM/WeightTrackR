@@ -12,8 +12,8 @@ ui <- dashboardPage(
                dateRangeInput(inputId = "date_lim",
                               label = "Date range for plots",
                               min   = "2022-08-01",
-                              start = "2023-08-01",
-                              end   = "2024-09-01"
+                              start = "2024-08-01",
+                              end   = lubridate::today()
                ),
                
                hr(), 
@@ -64,7 +64,7 @@ ui <- dashboardPage(
                dateRangeInput(inputId = "date_phase",
                               label = "Date interval for prediction:",
                               min = "2022-08-01",
-                              start = "2024-04-01",
+                              start = "2024-08-01",
                               end = lubridate::today()
                ),
                

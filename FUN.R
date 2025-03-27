@@ -109,7 +109,7 @@ data_tidy <- function(
       prot_g = `Protein(g)`,
       body_mass = as.double(body_mass),
       fat_perc = as.double(fat_perc),
-      fat_perc = fat_perc * 100,
+      fat_perc = fat_perc * 100 * 1.2,
       fat_mass = fat_perc / 100 * body_mass,
       ## bug correction from data set
       fat_perc = replace( fat_perc, Date >= date("2022-11-01") & Date <= date("2022-11-10"), NA),
